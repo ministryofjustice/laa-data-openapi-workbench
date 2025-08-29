@@ -1,8 +1,6 @@
-# Ministry of Justice Template Repository
+# LAA Data Stewardship OpenAPI Workbench
 
 [![Ministry of Justice Repository Compliance Badge](https://github-community.service.justice.gov.uk/repository-standards/api/template-repository/badge)](https://github-community.service.justice.gov.uk/repository-standards/template-repository)
-
-# LAA Data Stewardship OpenAPI Workbench
 
 This repository is a shared space for LAA teams to **design**, **experiment**, and **explore** OpenAPI endpoint definitions, schemas, and related documentation.  
 It’s intended as a collaborative sandbox where you can try out ideas before integrating them into production services.
