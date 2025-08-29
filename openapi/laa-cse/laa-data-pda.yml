@@ -1,0 +1,77 @@
+openapi: 3.0.3
+info:
+  title: Provider API
+  version: 1.0.0
+  description: API for managing provider data
+paths:
+  /providers:
+    post:
+      summary: Create multiple providers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderArrayWrapper'
+      responses:
+        '201':
+          description: Providers created successfully
+        '400':
+          description: Validation error
+components:
+  schemas:
+    Provider:
+      type: object
+      properties:
+        providerName:
+          type: string
+          minLength: 1
+        providerType:
+          type: string
+          enum:
+            - Advocate
+            - Chambers
+            - Legal services provider
+        constitutionalStatus:
+          type: string
+        indemnityReceivedDate:
+          type: string
+          format: date
+        companiesHouseNumber:
+          type: string
+        parentFirmName:
+          type: string
+          minLength: 1
+        parentFirmNumber:
+          type: string
+          pattern: ^[0-9][A-Z]{3}[0-9][A-Z]$
+        solicitorAdvocate:
+          type: boolean
+        advocateLevel:
+          type: string
+        barCouncilRollNumber:
+          type: string
+        highRisk:
+          type: boolean
+        highRiskSupplier:
+          type: boolean
+        firmIntervened:
+          type: boolean
+          default: false
+        firmIntervenedDate:
+          type: string
+          format: date
+        notForProfit:
+          type: boolean
+      required:
+        - providerName
+        - providerType
+    ProviderArrayWrapper:
+      type: object
+      properties:
+        providers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Provider'
+      required:
+        - providers

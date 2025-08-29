@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  swagger:
+    image: swagger-docs:latest    # Explicit tag
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    # Optional: live mount for dev
+    # volumes:
+    #   - ./docs:/app/public:ro
+    restart: unless-stopped
