@@ -44,6 +44,8 @@ openapi/
     my-service.yaml
 ```
 
+Can't see your yml file in the Swagger document? Check `docs/swagger-config.json` to see if your file is listed.
+
 ---
 
 ## 🔧 Useful Tools
