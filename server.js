@@ -75,7 +75,7 @@ const handler = async (req, res) => {
         const filePath = await resolvePath(urlPath);
         if (filePath) return streamFile(res, filePath);
 
-        // SPA fallback ONLY for extensionless routes; assets (e.g., .yaml) should 404
+        // SPA fallback ONLY for extensionless "page" routes
         if (!reqExt) {
             const fallback = path.join(ROOT, 'index.html');
             try {
@@ -86,11 +86,13 @@ const handler = async (req, res) => {
             }
         }
 
+        // Assets like .yaml/.yml should 404 (not return index.html)
         return notFound(res);
     } catch (err) {
         return serverError(res, err);
     }
 };
+
 
 http.createServer(handler).listen(PORT, '0.0.0.0', () => {
     console.log(`Static server bound to 0.0.0.0 (accessible via http://localhost:${PORT})`);

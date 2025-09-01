@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Provider API
   version: 1.0.0
-  description: API for managing provider data
+
 paths:
   /providers:
     post:
@@ -12,31 +12,42 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProviderArrayWrapper'
+              type: object
+              properties:
+                providers:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Provider'
+              required:
+                - providers
       responses:
         '201':
           description: Providers created successfully
         '400':
-          description: Validation error
+          description: Invalid input
+
 components:
   schemas:
     Provider:
       type: object
+      additionalProperties: false
       properties:
         providerName:
           type: string
           minLength: 1
         providerType:
-          type: string
-          enum:
-            - Advocate
-            - Chambers
-            - Legal services provider
+          type: array
+          items:
+            type: string
+          minItems: 1
+          uniqueItems: true
         constitutionalStatus:
           type: string
         indemnityReceivedDate:
           type: string
           format: date
+          description: Date in ISO 8601 format (YYYY-MM-DD)
+          example: YYYY-MM-D
         companiesHouseNumber:
           type: string
         parentFirmName:
@@ -44,34 +55,29 @@ components:
           minLength: 1
         parentFirmNumber:
           type: string
-          pattern: ^[0-9][A-Z]{3}[0-9][A-Z]$
         solicitorAdvocate:
           type: boolean
+          default: false
         advocateLevel:
           type: string
         barCouncilRollNumber:
           type: string
         highRisk:
           type: boolean
+          default: false
         highRiskSupplier:
           type: boolean
+          default: false
         firmIntervened:
           type: boolean
           default: false
         firmIntervenedDate:
           type: string
           format: date
+          description: Date in ISO 8601 format (YYYY-MM-DD)
+          example: YYYY-MM-D
         notForProfit:
           type: boolean
+          default: false
       required:
         - providerName
-        - providerType
-    ProviderArrayWrapper:
-      type: object
-      properties:
-        providers:
-          type: array
-          items:
-            $ref: '#/components/schemas/Provider'
-      required:
-        - providers
