@@ -2,11 +2,17 @@ openapi: 3.0.3
 info:
   title: Provider API
   version: 1.0.0
+  description: API for managing legal service providers, including solicitors, chambers, and advocates.
+
 
 paths:
   /providers:
     post:
       summary: Create multiple providers
+      description: |
+        Adds one or more legal service providers (e.g., solicitors, chambers, advocates) to the system.
+        Each provider must include a name, type, and other optional metadata. 
+        The request body should contain a `providers` array, where each item follows the `Provider` schema.
       requestBody:
         required: true
         content:
@@ -25,6 +31,42 @@ paths:
           description: Providers created successfully
         '400':
           description: Invalid input
+
+
+  /provider-offices:
+    post:
+      summary: Create provider offices
+      description: |
+        Adds one or more firms and their associated office locations to the system. 
+        The payload must include a `providerOffices` array, where each item contains firm details and an array of office objects.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                providerOffices:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ProviderOffices'
+              required:
+                - providerOffices
+      responses:
+        '201':
+          description: Provider offices created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Provider offices created successfully
+        '400':
+
+
+
 
 components:
   schemas:
@@ -47,7 +89,7 @@ components:
           type: string
           format: date
           description: Date in ISO 8601 format (YYYY-MM-DD)
-          example: YYYY-MM-D
+          example: YYYY-MM-DD
         companiesHouseNumber:
           type: string
         parentFirmName:
@@ -75,9 +117,106 @@ components:
           type: string
           format: date
           description: Date in ISO 8601 format (YYYY-MM-DD)
-          example: YYYY-MM-D
+          example: YYYY-MM-DD
         notForProfit:
           type: boolean
           default: false
       required:
         - providerName
+
+    ProviderOffices:
+      type: object
+      properties:
+        firm:
+          type: object
+          properties:
+            firmNumber:
+              type: string
+            firmId:
+              type: integer
+            ccmsFirmId:
+              type: integer
+            parentFirmId:
+              type: integer
+            firmName:
+              type: string
+            firmType:
+              type: string
+            constitutionalStatus:
+              type: string
+            solicitorAdvocateYN:
+              type: string
+            advocateLevel:
+              type: string
+            barCouncilRoll:
+              type: string
+            companyHouseNumber:
+              type: string
+        offices:
+          type: array
+          items:
+            type: object
+            properties:
+              firmOfficeId:
+                type: integer
+              ccmsFirmOfficeId:
+                type: integer
+              firmOfficeCode:
+                type: string
+              officeName:
+                type: string
+              officeCodeAlt:
+                type: string
+              type:
+                type: string
+              addressLine1:
+                type: string
+              addressLine2:
+                type: string
+              addressLine3:
+                type: string
+              addressLine4:
+                type: string
+              city:
+                type: string
+              county:
+                type: string
+              postCode:
+                type: string
+              dxCentre:
+                type: string
+              dxNumber:
+                type: string
+              telephoneAreaCode:
+                type: string
+              telephoneNumber:
+                type: string
+              faxAreaCode:
+                type: string
+              faxNumber:
+                type: string
+              emailAddress:
+                type: string
+              vatRegistrationNumber:
+                type: string
+              headOffice:
+                type: string
+              creationDate:
+                type: string
+                format: date
+                description: Date in ISO 8601 format (YYYY-MM-DD)
+                example: YYYY-MM-DD
+              lscRegion:
+                type: string
+              lscBidZone:
+                type: string
+              lscAreaOffice:
+                type: string
+              cjsForceName:
+                type: string
+              localAuthority:
+                type: string
+              policeStationAreaName:
+                type: string
+              dutySolicitorAreaName:
+                type: string
