@@ -134,8 +134,6 @@ components:
               type: string
             firmId:
               type: integer
-            ccmsFirmId:
-              type: integer
             parentFirmId:
               type: integer
             firmName:
@@ -158,8 +156,6 @@ components:
             type: object
             properties:
               firmOfficeId:
-                type: integer
-              ccmsFirmOfficeId:
                 type: integer
               firmOfficeCode:
                 type: string
@@ -201,11 +197,6 @@ components:
                 type: string
               headOffice:
                 type: string
-              creationDate:
-                type: string
-                format: date
-                description: Date in ISO 8601 format (YYYY-MM-DD)
-                example: YYYY-MM-DD
               lscRegion:
                 type: string
               lscBidZone:
