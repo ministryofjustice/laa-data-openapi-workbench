@@ -2,41 +2,94 @@ openapi: 3.0.3
 info:
   title: Provider API
   version: 1.0.0
-  description: API for managing provider data
+  description: API for managing legal service providers, including solicitors, chambers, and advocates.
+
+
 paths:
   /providers:
     post:
       summary: Create multiple providers
+      description: |
+        Adds one or more legal service providers (e.g., solicitors, chambers, advocates) to the system.
+        Each provider must include a name, type, and other optional metadata. 
+        The request body should contain a `providers` array, where each item follows the `Provider` schema.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProviderArrayWrapper'
+              type: object
+              properties:
+                providers:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Provider'
+              required:
+                - providers
       responses:
         '201':
           description: Providers created successfully
         '400':
-          description: Validation error
+          description: Invalid input
+
+
+  /provider-offices:
+    post:
+      summary: Create provider offices
+      description: |
+        Adds one or more firms and their associated office locations to the system. 
+        The payload must include a `providerOffices` array, where each item contains firm details and an array of office objects.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                providerOffices:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ProviderOffices'
+              required:
+                - providerOffices
+      responses:
+        '201':
+          description: Provider offices created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Provider offices created successfully
+        '400':
+
+
+
+
 components:
   schemas:
     Provider:
       type: object
+      additionalProperties: false
       properties:
         providerName:
           type: string
           minLength: 1
         providerType:
-          type: string
-          enum:
-            - Advocate
-            - Chambers
-            - Legal services provider
+          type: array
+          items:
+            type: string
+          minItems: 1
+          uniqueItems: true
         constitutionalStatus:
           type: string
         indemnityReceivedDate:
           type: string
           format: date
+          description: Date in ISO 8601 format (YYYY-MM-DD)
+          example: YYYY-MM-DD
         companiesHouseNumber:
           type: string
         parentFirmName:
@@ -44,34 +97,117 @@ components:
           minLength: 1
         parentFirmNumber:
           type: string
-          pattern: ^[0-9][A-Z]{3}[0-9][A-Z]$
         solicitorAdvocate:
           type: boolean
+          default: false
         advocateLevel:
           type: string
         barCouncilRollNumber:
           type: string
         highRisk:
           type: boolean
+          default: false
         highRiskSupplier:
           type: boolean
+          default: false
         firmIntervened:
           type: boolean
           default: false
         firmIntervenedDate:
           type: string
           format: date
+          description: Date in ISO 8601 format (YYYY-MM-DD)
+          example: YYYY-MM-DD
         notForProfit:
           type: boolean
+          default: false
       required:
         - providerName
-        - providerType
-    ProviderArrayWrapper:
+
+    ProviderOffices:
       type: object
       properties:
-        providers:
+        firm:
+          type: object
+          properties:
+            firmNumber:
+              type: string
+            firmId:
+              type: integer
+            parentFirmId:
+              type: integer
+            firmName:
+              type: string
+            firmType:
+              type: string
+            constitutionalStatus:
+              type: string
+            solicitorAdvocateYN:
+              type: string
+            advocateLevel:
+              type: string
+            barCouncilRoll:
+              type: string
+            companyHouseNumber:
+              type: string
+        offices:
           type: array
           items:
-            $ref: '#/components/schemas/Provider'
-      required:
-        - providers
+            type: object
+            properties:
+              firmOfficeId:
+                type: integer
+              firmOfficeCode:
+                type: string
+              officeName:
+                type: string
+              officeCodeAlt:
+                type: string
+              type:
+                type: string
+              addressLine1:
+                type: string
+              addressLine2:
+                type: string
+              addressLine3:
+                type: string
+              addressLine4:
+                type: string
+              city:
+                type: string
+              county:
+                type: string
+              postCode:
+                type: string
+              dxCentre:
+                type: string
+              dxNumber:
+                type: string
+              telephoneAreaCode:
+                type: string
+              telephoneNumber:
+                type: string
+              faxAreaCode:
+                type: string
+              faxNumber:
+                type: string
+              emailAddress:
+                type: string
+              vatRegistrationNumber:
+                type: string
+              headOffice:
+                type: string
+              lscRegion:
+                type: string
+              lscBidZone:
+                type: string
+              lscAreaOffice:
+                type: string
+              cjsForceName:
+                type: string
+              localAuthority:
+                type: string
+              policeStationAreaName:
+                type: string
+              dutySolicitorAreaName:
+                type: string
