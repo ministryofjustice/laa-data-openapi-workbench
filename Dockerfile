@@ -1,5 +1,5 @@
 # Serve static docs with a minimal Node HTTP server
-FROM node:20-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 
