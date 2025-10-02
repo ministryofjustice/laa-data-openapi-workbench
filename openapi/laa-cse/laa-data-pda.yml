@@ -194,6 +194,14 @@ paths:
             items:
               type: string
           description: Filter by Barrister or Advocate roll number (multi)
+        - name: parentFirmId
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: Filter by parent firm GUID (multi)
         - $ref: '#/components/parameters/QPageNumber'
         - $ref: '#/components/parameters/QPageSize'
       responses:
