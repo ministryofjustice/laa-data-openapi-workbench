@@ -1847,6 +1847,11 @@ components:
           type: string
           example: 'Smith'
           description: 'CWA ref: ???'
+        email:
+          type: string
+          format: email
+          example: 'john.smith@example.com'
+          description: 'CWA ref: ???'
 
     OfficeContractManagerV2:
       allOf:
@@ -1868,6 +1873,11 @@ components:
             lastName:
               type: string
               example: 'Smith'
+              description: 'CWA ref: ???'
+            email:
+              type: string
+              format: email
+              example: 'john.smith@example.com'
               description: 'CWA ref: ???'
             activeDateTo:
               type: string
