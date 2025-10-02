@@ -1566,8 +1566,7 @@ components:
     PhoneV2:
       type: object
       required:
-        - area
-        - phone
+        - phone  # Question: Can we extract the area code from a single phone number string if it's required?
       properties:
         area:
           type: string
