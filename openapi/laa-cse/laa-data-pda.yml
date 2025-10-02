@@ -282,6 +282,7 @@ paths:
         3) Updating Barrister or Advocate basic details
         4) Deactivating provider firm by setting `activeDateTo`
         5) Setting `intervened` flag
+        6) Updating the Firm's parent provider
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/XClientId'
@@ -1255,6 +1256,8 @@ components:
         name:
           type: string
           description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
+        parentFirm:
+          $ref: '#/components/schemas/BaseEntityGUIDV2'
         activeDateTo:
           type: string
           format: date
@@ -1310,6 +1313,8 @@ components:
         name:
           type: string
           description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
+        parentFirm:
+          $ref: '#/components/schemas/BaseEntityGUIDV2'
         activeDateTo:
           type: string
           format: date
@@ -1781,7 +1786,7 @@ components:
               format: uri
               description: 'CWA ref: PO_VENDOR_CONTACTS.URL'
             activeDateFrom:
-              type: stringCan yo
+              type: string
               format: date
               description: 'CWA ref: PO_VENDOR_CONTACTS.CREATION_DATE'
             activeDateTo:
