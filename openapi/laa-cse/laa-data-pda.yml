@@ -1398,9 +1398,7 @@ components:
         paymentDetails:
           $ref: '#/components/schemas/PaymentDetailsCreateV2'
         liaisonManager:
-          oneOf:
-            - $ref: '#/components/schemas/LiasonManagerCreateV2'
-            - $ref: '#/components/schemas/OfficeLiasonManagerPatchV2'
+          $ref: '#/components/schemas/LiasonManagerCreateV2'
         contractManager:
           $ref: '#/components/schemas/OfficeContractManagerCreateV2'
 
@@ -1613,9 +1611,7 @@ components:
             - Electronic
           description: 'CWA ref: PO_VENDOR_SITES_ALL.EDI_PAYMENT_METHOD. TODO: check the enum values. Any business rules?'
         bankAccountDetails:
-          oneOf:
-            - $ref: '#/components/schemas/BankAccountCreateV2'
-            - $ref: '#/components/schemas/OfficeBankAccountPatchV2'
+          $ref: '#/components/schemas/BankAccountCreateV2'
           description: 'Bank destails do not apply if paymentMethod=Cheque'
 
     PaymentDetailsV2:
