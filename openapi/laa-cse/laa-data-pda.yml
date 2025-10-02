@@ -1363,8 +1363,11 @@ components:
           example: 'John Smith'
         level:
           type: string
+          enum:
+            - Pupil
+            - Junior
+            - KC
           description: 'Barrister or Advocate level. CWA ref: PO_VENDORS.ATTRIBUTE10. TODO: Need better description of this field, any business rules?'
-          example: 'TODO: provide example'
         rollNumber:
           type: string
           description: 'Bar Council or Solicitors Regulation Authority roll number. CWA ref: PO_VENDORS.ATTRIBUTE11. TODO: Need better description of this field, any business rules?'
