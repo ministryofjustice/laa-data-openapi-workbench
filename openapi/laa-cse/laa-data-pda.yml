@@ -27,6 +27,12 @@ paths:
             items:
               type: string
           description: Filter by contract manager ID (multi)
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Fuzzy search by contract manager name (searches both first and last names)
         - $ref: '#/components/parameters/QPageNumber'
         - $ref: '#/components/parameters/QPageSize'
       responses:
