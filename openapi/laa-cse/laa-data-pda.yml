@@ -27,6 +27,12 @@ paths:
             items:
               type: string
           description: Filter by contract manager ID (multi)
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Fuzzy search by contract manager name (searches both first and last names)
         - $ref: '#/components/parameters/QPageNumber'
         - $ref: '#/components/parameters/QPageSize'
       responses:
@@ -188,6 +194,14 @@ paths:
             items:
               type: string
           description: Filter by Barrister or Advocate roll number (multi)
+        - name: parentFirmId
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: Filter by parent firm GUID (multi)
         - $ref: '#/components/parameters/QPageNumber'
         - $ref: '#/components/parameters/QPageSize'
       responses:
@@ -226,10 +240,10 @@ paths:
                   example: 'P0013'
                   description: 'Server error code'
 
-  /provider-firms/{providerFirmGUID}:
+  /provider-firms/{officeAccountNumber}:
     get:
-      summary: Retrieve provider details by GUID
-      operationId: getProviderFirmByGUID
+      summary: Retrieve provider details by head office account number
+      operationId: getProviderFirmByOfficeAccountNumber
       tags:
         - Provider Firms
       description: |
@@ -239,12 +253,12 @@ paths:
         - $ref: '#/components/parameters/XClientId'
         - $ref: '#/components/parameters/XClientVersion'
         - $ref: '#/components/parameters/XEnv'
-        - name: providerFirmGUID
+        - name: officeAccountNumber
           in: path
           required: true
           schema:
             type: string
-          description: Unique identifier of the provider
+          description: Head office account number (unique per firm)
       responses:
         '200':
           description: Provider details retrieved successfully
@@ -270,23 +284,24 @@ paths:
       tags:
         - Provider Firms
       description: |
-        Updating provider details endpoint is used for the following use cases: 
+        Updating provider details endpoint is used for the following use cases:
         1) Updating company name
         2) Updating legal service provider basic details
         3) Updating Barrister or Advocate basic details
         4) Deactivating provider firm by setting `activeDateTo`
         5) Setting `intervened` flag
+        6) Updating the firm's parent provider
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/XClientId'
         - $ref: '#/components/parameters/XClientVersion'
         - $ref: '#/components/parameters/XEnv'
-        - name: providerFirmGUID
+        - name: officeAccountNumber
           in: path
           required: true
           schema:
             type: string
-          description: Unique identifier of the provider
+          description: Head office account number (unique per firm)
       requestBody:
         required: true
         content:
@@ -1249,6 +1264,8 @@ components:
         name:
           type: string
           description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
+        parentFirm:
+          $ref: '#/components/schemas/BaseEntityGUIDV2'
         activeDateTo:
           type: string
           format: date
@@ -1304,6 +1321,8 @@ components:
         name:
           type: string
           description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
+        parentFirm:
+          $ref: '#/components/schemas/BaseEntityGUIDV2'
         activeDateTo:
           type: string
           format: date
@@ -1357,8 +1376,11 @@ components:
           example: 'John Smith'
         level:
           type: string
+          enum:
+            - Pupil
+            - Junior
+            - KC
           description: 'Barrister or Advocate level. CWA ref: PO_VENDORS.ATTRIBUTE10. TODO: Need better description of this field, any business rules?'
-          example: 'TODO: provide example'
         rollNumber:
           type: string
           description: 'Bar Council or Solicitors Regulation Authority roll number. CWA ref: PO_VENDORS.ATTRIBUTE11. TODO: Need better description of this field, any business rules?'
@@ -1384,9 +1406,7 @@ components:
         paymentDetails:
           $ref: '#/components/schemas/PaymentDetailsCreateV2'
         liaisonManager:
-          oneOf:
-            - $ref: '#/components/schemas/LiasonManagerCreateV2'
-            - $ref: '#/components/schemas/OfficeLiasonManagerPatchV2'
+          $ref: '#/components/schemas/LiasonManagerCreateV2'
         contractManager:
           $ref: '#/components/schemas/OfficeContractManagerCreateV2'
 
@@ -1557,8 +1577,7 @@ components:
     PhoneV2:
       type: object
       required:
-        - area
-        - phone
+        - phone  # Question: Can we extract the area code from a single phone number string if it's required?
       properties:
         area:
           type: string
@@ -1600,9 +1619,7 @@ components:
             - Electronic
           description: 'CWA ref: PO_VENDOR_SITES_ALL.EDI_PAYMENT_METHOD. TODO: check the enum values. Any business rules?'
         bankAccountDetails:
-          oneOf:
-            - $ref: '#/components/schemas/BankAccountCreateV2'
-            - $ref: '#/components/schemas/OfficeBankAccountPatchV2'
+          $ref: '#/components/schemas/BankAccountCreateV2'
           description: 'Bank destails do not apply if paymentMethod=Cheque'
 
     PaymentDetailsV2:
@@ -1834,6 +1851,11 @@ components:
           type: string
           example: 'Smith'
           description: 'CWA ref: ???'
+        email:
+          type: string
+          format: email
+          example: 'john.smith@example.com'
+          description: 'CWA ref: ???'
 
     OfficeContractManagerV2:
       allOf:
@@ -1855,6 +1877,11 @@ components:
             lastName:
               type: string
               example: 'Smith'
+              description: 'CWA ref: ???'
+            email:
+              type: string
+              format: email
+              example: 'john.smith@example.com'
               description: 'CWA ref: ???'
             activeDateTo:
               type: string
