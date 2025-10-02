@@ -232,10 +232,10 @@ paths:
                   example: 'P0013'
                   description: 'Server error code'
 
-  /provider-firms/{providerFirmGUID}:
+  /provider-firms/{officeAccountNumber}:
     get:
-      summary: Retrieve provider details by GUID
-      operationId: getProviderFirmByGUID
+      summary: Retrieve provider details by head office account number
+      operationId: getProviderFirmByOfficeAccountNumber
       tags:
         - Provider Firms
       description: |
@@ -245,12 +245,12 @@ paths:
         - $ref: '#/components/parameters/XClientId'
         - $ref: '#/components/parameters/XClientVersion'
         - $ref: '#/components/parameters/XEnv'
-        - name: providerFirmGUID
+        - name: officeAccountNumber
           in: path
           required: true
           schema:
             type: string
-          description: Unique identifier of the provider
+          description: Head office account number (unique per firm)
       responses:
         '200':
           description: Provider details retrieved successfully
@@ -276,7 +276,7 @@ paths:
       tags:
         - Provider Firms
       description: |
-        Updating provider details endpoint is used for the following use cases: 
+        Updating provider details endpoint is used for the following use cases:
         1) Updating company name
         2) Updating legal service provider basic details
         3) Updating Barrister or Advocate basic details
@@ -287,12 +287,12 @@ paths:
         - $ref: '#/components/parameters/XClientId'
         - $ref: '#/components/parameters/XClientVersion'
         - $ref: '#/components/parameters/XEnv'
-        - name: providerFirmGUID
+        - name: officeAccountNumber
           in: path
           required: true
           schema:
             type: string
-          description: Unique identifier of the provider
+          description: Head office account number (unique per firm)
       requestBody:
         required: true
         content:
@@ -1781,7 +1781,7 @@ components:
               format: uri
               description: 'CWA ref: PO_VENDOR_CONTACTS.URL'
             activeDateFrom:
-              type: string
+              type: stringCan yo
               format: date
               description: 'CWA ref: PO_VENDOR_CONTACTS.CREATION_DATE'
             activeDateTo:
