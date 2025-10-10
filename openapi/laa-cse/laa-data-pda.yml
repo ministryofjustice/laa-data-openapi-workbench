@@ -16,9 +16,6 @@ paths:
         Contract managers are required for assigning contracts and schedules to a provider firm.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: contractManagerId
           in: query
           required: false
@@ -53,7 +50,8 @@ paths:
                   type: string
                   example: 'P0012'
                   description: 'Bad data error code'
-
+        '404':
+          description: Provider not found
         '500':
           description: Server error
           content:
@@ -79,9 +77,6 @@ paths:
         `practitionerDetails` applicable only to `type`=`Barrister` or `type`=`Advocate`.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
       requestBody:
         required: true
         content:
@@ -128,9 +123,6 @@ paths:
         - Provider Firms
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: query
           required: false
@@ -236,9 +228,6 @@ paths:
         Retrieve basic provider details. Use sub resources to retirieve other information.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -278,9 +267,6 @@ paths:
         5) Setting `intervened` flag
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -324,9 +310,6 @@ paths:
         Setting `primary`=`true` results in `TODO: ?????`
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -386,9 +369,6 @@ paths:
         `guid`s that can be used in the offce PATCH operation to set alternative bank account details.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -421,6 +401,16 @@ paths:
                   type: string
                   example: 'P0012'
                   description: 'Bad data error code'
+        '404':
+          description: Resource not found.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  example: 'P0013'
+                  description: 'Server error code'
 
         '500':
           description: Server error
@@ -443,9 +433,6 @@ paths:
         Retrieve provider bank account details.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -488,9 +475,6 @@ paths:
         2) Nominating bank detail as primary using `primary`=`true`
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -540,9 +524,6 @@ paths:
         Setting `primary`=`true` results in `TODO: ?????`
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -580,7 +561,8 @@ paths:
                   type: string
                   example: 'P0012'
                   description: 'Bad data error code'
-
+        '404':
+          description: Provider not found
         '500':
           description: Server error
           content:
@@ -602,9 +584,6 @@ paths:
         When you do not have `providerFirmGUID` - use `/provider-firms-offices?officeGUID=12345&allProviderOffices=true`
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -662,9 +641,6 @@ paths:
         2) Browse all offices of a specific provider using one known `officeGUID`.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: officeGUID
           in: query
           required: false
@@ -726,9 +702,6 @@ paths:
         Retrieve provider office details.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -774,9 +747,6 @@ paths:
         5) Assigning different bank details using `bankAccountDetailsGUID`
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -826,9 +796,6 @@ paths:
         `TODO: rules for setting creating a manager at the head office level`
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -896,9 +863,6 @@ paths:
         Retrieve provider office liason managers.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -949,9 +913,6 @@ paths:
         `TODO: rules for setting creating a manager at the head office level`
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -1019,9 +980,6 @@ paths:
         Retrieve provider office contract managers.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -1073,9 +1031,6 @@ paths:
         `TODO: how to remove?`
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -1143,9 +1098,6 @@ paths:
         Retrieve chamber office practitioners.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
         - name: providerFirmGUID
           in: path
           required: true
@@ -1919,29 +1871,6 @@ components:
       schema:
         type: string
       description: Correlation ID for tracing requests
-
-    XClientId:
-      name: x-client-id
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Identifier for the calling application
-
-    XClientVersion:
-      name: x-client-version
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Version of the client application
-    XEnv:
-      name: x-env
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Environment indicator (e.g., dev, staging, prod)
 
     QPageNumber:
       name: page
