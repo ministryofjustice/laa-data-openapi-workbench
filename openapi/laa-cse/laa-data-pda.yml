@@ -8,7 +8,11 @@ info:
 paths:
   /provider-contact-managers:
     get:
-      summary: Retireve a list of contract managers
+      summary: Retrieve a list of contract managers
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       tags:
         - Contract Managers
       description: |
@@ -66,6 +70,10 @@ paths:
   /provider-firms:
     post:
       summary: Create a provider firm
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: createProviderFirm
       tags:
         - Provider Firms
@@ -118,6 +126,10 @@ paths:
                   description: 'Server error code'
     get:
       summary: Retrieve providers with optional filters
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirms
       tags:
         - Provider Firms
@@ -221,6 +233,10 @@ paths:
   /provider-firms/{providerFirmGUID}:
     get:
       summary: Retrieve provider details by GUID
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmByGUID
       tags:
         - Provider Firms
@@ -255,6 +271,10 @@ paths:
                   description: 'Server error code'
     patch:
       summary: Update provider details
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: updateProviderFirm
       tags:
         - Provider Firms
@@ -302,6 +322,10 @@ paths:
   /provider-firms/{providerFirmGUID}/bank-details:
     post:
       summary: Create bank account details for a provider firm
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: createProviderFirmBankAccount
       tags:
         - Provider Firm Bank Accounts
@@ -361,6 +385,10 @@ paths:
 
     get:
       summary: Retrieve a list of provider bank accounts with optional filters
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmBankAccounts
       tags:
         - Provider Firm Bank Accounts
@@ -426,6 +454,10 @@ paths:
   /provider-firms/{providerFirmGUID}/bank-details/{bankAccountDetailGUID}:
     get:
       summary: Retrieve provider bank details by GUID
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmBankAccountByGUID
       tags:
         - Provider Firm Bank Accounts
@@ -466,6 +498,10 @@ paths:
                   description: 'Server error code'
     patch:
       summary: Update provier bank details
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: updateProviderFirmBankAccount
       tags:
         - Provider Firm Bank Accounts
@@ -516,6 +552,10 @@ paths:
   /provider-firms/{providerFirmGUID}/offices:
     post:
       summary: Create an office for a provider firm
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: createProviderFirmOffice
       tags:
         - Provider Firm Offices
@@ -576,6 +616,10 @@ paths:
 
     get:
       summary: Retrieve a list of provider offices with optional filters
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmOffices
       tags:
         - Provider Firm Offices
@@ -632,6 +676,10 @@ paths:
 
     get:
       summary: Retrieve a list of provider offices with optional filters
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getOffices
       tags:
         - Provider Firm Offices
@@ -695,6 +743,10 @@ paths:
   /provider-firms/{providerFirmGUID}/offices/{officeGUID}:
     get:
       summary: Retrieve provider office details by GUID
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmOfficeByGUID
       tags:
         - Provider Firm Offices
@@ -735,6 +787,10 @@ paths:
                   description: 'Server error code'
     patch:
       summary: Update provier office details
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: updateProviderFirmOffice
       tags:
         - Provider Firm Offices
@@ -788,6 +844,10 @@ paths:
   /provider-firms/{providerFirmGUID}/offices/{officeGUID}/liason-managers:
     post:
       summary: Create a liason manager for office. Creating new manager end-dates all other managers.
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: createProviderFirmOfficeLiasonManager
       tags:
         - Provider Firm Offices Liason Managers
@@ -856,6 +916,10 @@ paths:
 
     get:
       summary: Retrieve liason managers for a given office office
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmOfficeLiasonManagers
       tags:
         - Provider Firm Offices Liason Managers
@@ -905,6 +969,10 @@ paths:
   /provider-firms/{providerFirmGUID}/offices/{officeGUID}/contract-managers:
     post:
       summary: Assign a liason manager for office. Assigning a new manager end-dates all other managers.
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: createProviderFirmOfficeContractManager
       tags:
         - Provider Firm Offices Contract Managers
@@ -973,6 +1041,10 @@ paths:
 
     get:
       summary: Retrieve contract managers for a given office office
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmOfficeContractManagers
       tags:
         - Provider Firm Offices Contract Managers
@@ -1022,6 +1094,10 @@ paths:
   /provider-firms/{providerFirmGUID}/offices/{officeGUID}/practitioners:
     post:
       summary: Assign a practitioner (Barrister or Advocate) for office of a Chamber.
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: createProviderFirmOfficePractitioner
       tags:
         - Chamber Office Practitioners
@@ -1091,6 +1167,10 @@ paths:
 
     get:
       summary: Retrieve practirioners for a given chamber office
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmOfficePractitioners
       tags:
         - Chamber Office Practitioners
@@ -1138,12 +1218,21 @@ paths:
                   description: 'Server error code'
 
 components:
-
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+    AzureAD:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/authorize
+          tokenUrl: https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token
+          scopes:
+            api://<client-id>/access_as_user: Access the API as an authenticated user
+
 
   schemas:
 
