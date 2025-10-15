@@ -44,6 +44,8 @@ paths:
                       $ref: '#/components/schemas/ContractManagerV2'
                   metadata:
                     $ref: '#/components/schemas/PaginatedSearchV2'
+                  links:
+                    $ref: "#/components/schemas/LinksV2"
         '400':
           description: Invalid input
           content:
@@ -208,6 +210,8 @@ paths:
                       $ref: '#/components/schemas/ProviderV2'
                   metadata:
                     $ref: '#/components/schemas/PaginatedSearchV2'
+                  links:
+                    $ref: "#/components/schemas/LinksV2"
         '400':
           description: Invalid input
           content:
@@ -419,6 +423,8 @@ paths:
                       $ref: '#/components/schemas/BankAccountV2'
                   metadata:
                     $ref: '#/components/schemas/PaginatedSearchV2'
+                  links:
+                    $ref: "#/components/schemas/LinksV2"
         '400':
           description: Invalid input
           content:
@@ -650,6 +656,8 @@ paths:
                       $ref: '#/components/schemas/OfficeV2'
                   metadata:
                     $ref: '#/components/schemas/PaginatedSearchV2'
+                  links:
+                    $ref: "#/components/schemas/LinksV2"
         '400':
           description: Invalid input
           content:
@@ -718,6 +726,8 @@ paths:
                       $ref: '#/components/schemas/OfficeV2'
                   metadata:
                     $ref: '#/components/schemas/PaginatedSearchV2'
+                  links:
+                    $ref: "#/components/schemas/LinksV2"
         '400':
           description: Invalid input
           content:
@@ -953,6 +963,8 @@ paths:
                       $ref: '#/components/schemas/LiasonManagerV2'
                   metadata:
                     $ref: '#/components/schemas/PaginatedSearchV2'
+                  links:
+                    $ref: "#/components/schemas/LinksV2"
         '404':
           description: Provider not found
         '500':
@@ -1078,6 +1090,8 @@ paths:
                       $ref: '#/components/schemas/OfficeContractManagerV2'
                   metadata:
                     $ref: '#/components/schemas/PaginatedSearchV2'
+                  links:
+                    $ref: "#/components/schemas/LinksV2"
         '404':
           description: Provider not found
         '500':
@@ -1204,6 +1218,8 @@ paths:
                       $ref: '#/components/schemas/OfficePractitionerV2'
                   metadata:
                     $ref: '#/components/schemas/PaginatedSearchV2'
+                  links:
+                    $ref: "#/components/schemas/LinksV2"
         '404':
           description: Provider not found
         '500':
@@ -1947,10 +1963,38 @@ components:
           type: number
           example: 10
           description: 'Page size used for this search'
-        totalResults:
+        totalPages:
+          type: number
+          example: 5
+          description: 'Total number of pages'
+        totalItems:
           type: number
           example: 123
           description: 'Total number of records for given search request'
+
+    LinksV2:
+      type: object
+      properties:
+        self:
+          type: string
+          example: "/example?page=2&pageSize=10"
+          format: uri
+        next:
+          type: string
+          example: "/example?page=3&pageSize=10"
+          format: uri
+        prev:
+          type: string
+          example: "/example?page=1&pageSize=10"
+          format: uri
+        first:
+          type: string
+          example: "/example?page=1&pageSize=10"
+          format: uri
+        last:
+          type: string
+          example: "/example?page=5&pageSize=10"
+          format: uri
 
   parameters:
     XCorrelationId:
