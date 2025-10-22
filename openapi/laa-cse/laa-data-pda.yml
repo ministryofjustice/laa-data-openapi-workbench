@@ -19,7 +19,7 @@ paths:
         Retireve a list of contract managers. These are employee records in CWA and potentially we need to get this information from SiLAS.
         Contract managers are required for assigning contracts and schedules to a provider firm.
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: contractManagerId
           in: query
           required: false
@@ -46,28 +46,27 @@ paths:
                     $ref: '#/components/schemas/PaginatedSearchV2'
                   links:
                     $ref: "#/components/schemas/LinksV2"
+
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0012'
-                  description: 'Bad data error code'
+                $ref: '#/components/schemas/400Response'
+
         '404':
           description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
+
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
   /provider-firms:
     post:
@@ -1276,7 +1275,92 @@ components:
         guid:
           $ref: '#/components/schemas/BaseEntityGUIDV2'
 
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        code:
+          type: string
+          example: 'P00XX'
+        message:
+          type: string
+          example: 'Invalid provider ID format'
+        path:
+          type: string
+          example: '/api/providers'
 
+
+    400Response:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+        code:
+          type: string
+          example: 'P00XX'
+        message:
+          type: string
+          example: 'Invalid input provided. Please check your request and try again.'
+        path:
+          type: string
+          example: '/providers-XXX'
+
+
+    404Response:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          example: 404
+        error:
+          type: string
+          example: "Not Found"
+        code:
+          type: string
+          example: 'P00NF'
+        message:
+          type: string
+          example: "The requested provider could not be found."
+        path:
+          type: string
+          example: '/providers-XXX'
+
+    500Response:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          example: 500
+        error:
+          type: string
+          example: "Internal Server Error"
+        code:
+          type: string
+          example: 'P00SE'
+        message:
+          type: string
+          example: "An unexpected error occurred. Please try again later."
+        path:
+          type: string
+          example: '/providers-XXX'
 
     ProviderFirmTypeV2:
       type: string
@@ -1285,7 +1369,6 @@ components:
         - Chambers
         - Advocate
         - Barrister
-
 
     ProviderCreateV2:
       type: object
@@ -1997,6 +2080,18 @@ components:
       schema:
         type: string
       description: Correlation ID for tracing requests
+
+    TraceParentHeader:
+      name: traceparent
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: '^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$'
+      description: >
+        W3C Trace Context header used for distributed tracing.
+        Format: 00-<trace-id>-<span-id>-<trace-flags>.
+        Example: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-0
 
     QPageNumber:
       name: page
