@@ -16,7 +16,7 @@ paths:
       tags:
         - Contract Managers
       description: |
-        Retireve a list of contract managers. These are employee records in CWA and potentially we need to get this information from SiLAS.
+        Retrieve a list of contract managers. These are employee records in CWA and potentially we need to get this information from SiLAS.
         Contract managers are required for assigning contracts and schedules to a provider firm.
       parameters:
         - $ref: '#/components/parameters/TraceParentHeader'
@@ -244,7 +244,7 @@ paths:
       tags:
         - Provider Firms
       description: |
-        Retrieve basic provider details. Use sub resources to retirieve other information.
+        Retrieve basic provider details. Use sub resources to retrieve other information.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
         - name: providerFirmGUID
@@ -401,7 +401,7 @@ paths:
         - Provider Firm Bank Accounts
       description: |
         Retrieve bank account details for a given provider. This list may be be used to get 
-        `guid`s that can be used in the offce PATCH operation to set alternative bank account details.
+        `guid`s that can be used in the office PATCH operation to set alternative bank account details.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
         - name: providerFirmGUID
@@ -506,7 +506,7 @@ paths:
                   example: 'P0013'
                   description: 'Server error code'
     patch:
-      summary: Update provier bank details
+      summary: Update provider bank details
       security:
         - bearerAuth: [ ]
         - AzureAD:
@@ -716,7 +716,7 @@ paths:
           in: query
           schema:
             type: boolean
-          description: use this filter in conjuction with `officeGUID` to get all offices for the provider that the office with specified guid belongs to
+          description: use this filter in conjunction with `officeGUID` to get all offices for the provider that the office with specified guid belongs to
         - $ref: '#/components/parameters/QPageNumber'
         - $ref: '#/components/parameters/QPageSize'
       responses:
@@ -862,18 +862,18 @@ paths:
                   example: 'P0013'
                   description: 'Server error code'
 
-  /provider-firms/{providerFirmGUID}/offices/{officeGUID}/liason-managers:
+  /provider-firms/{providerFirmGUID}/offices/{officeGUID}/liaison-managers:
     post:
-      summary: Create a liason manager for office. Creating new manager end-dates all other managers.
+      summary: Create a liaison manager for office. Creating new manager end-dates all other managers.
       security:
         - bearerAuth: [ ]
         - AzureAD:
             - api://<client-id>/access_as_user
-      operationId: createProviderFirmOfficeLiasonManager
+      operationId: createProviderFirmOfficeLiaisonManager
       tags:
-        - Provider Firm Offices Liason Managers
+        - Provider Firm Offices Liaison Managers
       description: |
-        Create new liason manager for an office.
+        Create new liaison manager for an office.
         `TODO: rules for setting creating a manager at the head office level`
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
@@ -894,7 +894,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LiasonManagerCreateV2'
+              $ref: '#/components/schemas/LiaisonManagerCreateV2'
       responses:
         '201':
           description: Office created successfully
@@ -909,9 +909,9 @@ paths:
                   officeGUID:
                     type: string
                     description: Unique identifier of the created office
-                  liasonManagerGUID:
+                  liaisonManagerGUID:
                     type: string
-                    description: Unique identifier of the created liason manager
+                    description: Unique identifier of the created liaison manager
 
         '400':
           description: Invalid input
@@ -936,16 +936,16 @@ paths:
                   description: 'Server error code'
 
     get:
-      summary: Retrieve liason managers for a given office office
+      summary: Retrieve liaison managers for a given office office
       security:
         - bearerAuth: [ ]
         - AzureAD:
             - api://<client-id>/access_as_user
-      operationId: getProviderFirmOfficeLiasonManagers
+      operationId: getProviderFirmOfficeLiaisonManagers
       tags:
-        - Provider Firm Offices Liason Managers
+        - Provider Firm Offices Liaison Managers
       description: |
-        Retrieve provider office liason managers.
+        Retrieve provider office liaison managers.
       parameters:
         - $ref: '#/components/parameters/XCorrelationId'
         - name: providerFirmGUID
@@ -971,7 +971,7 @@ paths:
                   content:
                     type: array
                     items:
-                      $ref: '#/components/schemas/LiasonManagerV2'
+                      $ref: '#/components/schemas/LiaisonManagerV2'
                   metadata:
                     $ref: '#/components/schemas/PaginatedSearchV2'
                   links:
@@ -991,7 +991,7 @@ paths:
 
   /provider-firms/{providerFirmGUID}/offices/{officeGUID}/contract-managers:
     post:
-      summary: Assign a liason manager for office. Assigning a new manager end-dates all other managers.
+      summary: Assign a liaison manager for office. Assigning a new manager end-dates all other managers.
       security:
         - bearerAuth: [ ]
         - AzureAD:
@@ -1036,9 +1036,9 @@ paths:
                   officeGUID:
                     type: string
                     description: Unique identifier of the created office
-                  liasonManagerGUID:
+                  liaisonManagerGUID:
                     type: string
-                    description: Unique identifier of the created liason manager
+                    description: Unique identifier of the created liaison manager
 
         '400':
           description: Invalid input
@@ -1166,7 +1166,7 @@ paths:
                     description: Unique identifier of the created office
                   practitionerGUID:
                     type: string
-                    description: Unique identifier of the created liason manager
+                    description: Unique identifier of the created liaison manager
 
         '400':
           description: Invalid input
@@ -1191,7 +1191,7 @@ paths:
                   description: 'Server error code'
 
     get:
-      summary: Retrieve practirioners for a given chamber office
+      summary: Retrieve practitioners for a given chamber office
       security:
         - bearerAuth: [ ]
         - AzureAD:
@@ -1378,14 +1378,14 @@ components:
       properties:
         type:
           $ref: '#/components/schemas/ProviderFirmTypeV2'
-          description: 'Type of the provider firm. CWA ref: PO_VENDORS.ATTRIBUTE4. TODO: check the enum valuesx'
+          description: 'Type of the provider firm. CWA ref: PO_VENDORS.ATTRIBUTE4. TODO: check the enum values'
         name:
           type: string
           description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
         activeDateTo:
           type: string
           format: date
-          description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE. TODO: check if this should be synched with head office available to date or if this is separate function'
+          description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE. TODO: check if this should be synced with head office available to date or if this is separate function'
         legalServicesProviderDetails:
           $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
           description: 'applicable only for type=Legal Services Provider'
@@ -1518,8 +1518,8 @@ components:
           $ref: '#/components/schemas/PaymentDetailsCreateV2'
         liaisonManager:
           oneOf:
-            - $ref: '#/components/schemas/LiasonManagerCreateV2'
-            - $ref: '#/components/schemas/OfficeLiasonManagerPatchV2'
+            - $ref: '#/components/schemas/LiaisonManagerCreateV2'
+            - $ref: '#/components/schemas/OfficeLiaisonManagerPatchV2'
         contractManager:
           $ref: '#/components/schemas/OfficeContractManagerCreateV2'
 
@@ -1626,11 +1626,11 @@ components:
           enum:
             - Y
             - N
-          description: 'CWA ref: PO_VENDORS.ATTRIBUTE13. TODO: Need better description of this field, any business rules? check if this should be synched with head office data or if this is separate function'
+          description: 'CWA ref: PO_VENDORS.ATTRIBUTE13. TODO: Need better description of this field, any business rules? check if this should be synced with head office data or if this is separate function'
         intervenedChangeDate:
           type: string
           format: date
-          description: 'CWA ref: PO_VENDORS.ATTRIBUTE15. TODO: Need better description of this field, any business rules? check if this should be synched with head office data or if this is separate function'
+          description: 'CWA ref: PO_VENDORS.ATTRIBUTE15. TODO: Need better description of this field, any business rules? check if this should be synced with head office data or if this is separate function'
 
 
     IntervenedOfficeDetailsV2:
@@ -1736,7 +1736,7 @@ components:
           oneOf:
             - $ref: '#/components/schemas/BankAccountCreateV2'
             - $ref: '#/components/schemas/OfficeBankAccountPatchV2'
-          description: 'Bank destails do not apply if paymentMethod=Cheque'
+          description: 'Bank details do not apply if paymentMethod=Cheque'
 
     PaymentDetailsV2:
       type: object
@@ -1844,7 +1844,7 @@ components:
         bankAccountDetailGUID:
           $ref: '#/components/schemas/BaseEntityGUIDV2'
 
-    LiasonManagerCreateV2:
+    LiaisonManagerCreateV2:
       type: object
       required:
         - firstName
@@ -1878,7 +1878,7 @@ components:
           format: date
           description: 'CWA ref: PO_VENDOR_CONTACTS.INACTIVE_DATE'
 
-    LiasonManagerV2:
+    LiaisonManagerV2:
       allOf:
         - $ref: '#/components/schemas/BaseEntityV2'
         - type: object
@@ -1915,10 +1915,10 @@ components:
               description: 'CWA ref: PO_VENDOR_CONTACTS.INACTIVE_DATE'
 
 
-    OfficeLiasonManagerPatchV2:
+    OfficeLiaisonManagerPatchV2:
       type: object
       properties:
-        liasonManagerGUID:
+        liaisonManagerGUID:
           $ref: '#/components/schemas/BaseEntityGUIDV2'
 
     OfficeContractManagerCreateV2:
@@ -2082,7 +2082,7 @@ components:
       description: Correlation ID for tracing requests
 
     TraceParentHeader:
-      name: traceparent
+      name: transparent
       in: header
       required: false
       schema:
