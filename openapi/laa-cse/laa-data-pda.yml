@@ -8,17 +8,18 @@ info:
 paths:
   /provider-contact-managers:
     get:
-      summary: Retireve a list of contract managers
+      summary: Retrieve a list of contract managers
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       tags:
         - Contract Managers
       description: |
-        Retireve a list of contract managers. These are employee records in CWA and potentially we need to get this information from SiLAS.
+        Retrieve a list of contract managers. These are employee records in CWA and potentially we need to get this information from SiLAS.
         Contract managers are required for assigning contracts and schedules to a provider firm.
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: contractManagerId
           in: query
           required: false
@@ -37,37 +38,53 @@ paths:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ContractManagerV2'
-                  metadata:
-                    $ref: '#/components/schemas/PaginatedSearchV2'
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ContractManagerV2'
+                      metadata:
+                        $ref: '#/components/schemas/PaginatedSearchV2'
+                      links:
+                        $ref: '#/components/schemas/LinksV2'
+
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0012'
-                  description: 'Bad data error code'
+                $ref: '#/components/schemas/400Response'
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
+
+        '404':
+          description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
 
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
   /provider-firms:
     post:
       summary: Create a provider firm
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: createProviderFirm
       tags:
         - Provider Firms
@@ -78,10 +95,7 @@ paths:
         `legalServicesProviderDetails` applicable only to `type`=`Legal Services Provider`.
         `practitionerDetails` applicable only to `type`=`Barrister` or `type`=`Advocate`.
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
       requestBody:
         required: true
         content:
@@ -96,41 +110,44 @@ paths:
               schema:
                 type: object
                 properties:
-                  providerFirmGUID:
-                    type: string
-                    description: Unique identifier of the created provider
+                  data:
+                    type: object
+                    properties:
+                      providerFirmGUID:
+                        type: string
+                        description: Unique identifier of the created provider
 
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0012'
-                  description: 'Bad data error code'
+                $ref: '#/components/schemas/400Response'
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
 
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
     get:
       summary: Retrieve providers with optional filters
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirms
       tags:
         - Provider Firms
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: query
           required: false
@@ -198,47 +215,52 @@ paths:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ProviderV2'
-                  metadata:
-                    $ref: '#/components/schemas/PaginatedSearchV2'
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ProviderV2'
+                      metadata:
+                        $ref: '#/components/schemas/PaginatedSearchV2'
+                      links:
+                        $ref: "#/components/schemas/LinksV2"
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0012'
-                  description: 'Bad data error code'
+                $ref: '#/components/schemas/400Response'
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
 
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
   /provider-firms/{providerFirmGUID}:
     get:
       summary: Retrieve provider details by GUID
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmByGUID
       tags:
         - Provider Firms
       description: |
-        Retrieve basic provider details. Use sub resources to retirieve other information.
+        Retrieve basic provider details. Use sub resources to retrieve other information.
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -251,21 +273,35 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProviderV2'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ProviderV2'
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
         '404':
           description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
     patch:
       summary: Update provider details
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: updateProviderFirm
       tags:
         - Provider Firms
@@ -277,10 +313,7 @@ paths:
         4) Deactivating provider firm by setting `activeDateTo`
         5) Setting `intervened` flag
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -299,23 +332,42 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProviderV2'
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      providerFirmGUID:
+                        type: string
+                        description: Unique identifier of the created provider
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
+
         '404':
-          description: Provider not found
+            description: Provider not found
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/404Response'
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
   /provider-firms/{providerFirmGUID}/bank-details:
     post:
       summary: Create bank account details for a provider firm
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: createProviderFirmBankAccount
       tags:
         - Provider Firm Bank Accounts
@@ -323,10 +375,7 @@ paths:
         Create new bank account details used by given provider firm.
         Setting `primary`=`true` results in `TODO: ?????`
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -347,48 +396,51 @@ paths:
               schema:
                 type: object
                 properties:
-                  providerFirmGUID:
-                    type: string
-                    description: Unique identifier of the created provider
-                  bankAccountDetailGUID:
-                    type: string
-                    description: Unique identifier of the created bank detail
+                  data:
+                    type: object
+                    properties:
+                      providerFirmGUID:
+                        type: string
+                        description: Unique identifier of the created provider
+                      bankAccountDetailGUID:
+                        type: string
+                        description: Unique identifier of the created bank detail
 
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0012'
-                  description: 'Bad data error code'
+                $ref: '#/components/schemas/400Response'
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
 
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
     get:
       summary: Retrieve a list of provider bank accounts with optional filters
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmBankAccounts
       tags:
         - Provider Firm Bank Accounts
       description: |
         Retrieve bank account details for a given provider. This list may be be used to get 
-        `guid`s that can be used in the offce PATCH operation to set alternative bank account details.
+        `guid`s that can be used in the office PATCH operation to set alternative bank account details.
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -405,47 +457,59 @@ paths:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/BankAccountV2'
-                  metadata:
-                    $ref: '#/components/schemas/PaginatedSearchV2'
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/BankAccountV2'
+                      metadata:
+                        $ref: '#/components/schemas/PaginatedSearchV2'
+                      links:
+                        $ref: "#/components/schemas/LinksV2"
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0012'
-                  description: 'Bad data error code'
+                $ref: '#/components/schemas/400Response'
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
+
+        '404':
+          description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
 
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
   /provider-firms/{providerFirmGUID}/bank-details/{bankAccountDetailGUID}:
     get:
       summary: Retrieve provider bank details by GUID
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmBankAccountByGUID
       tags:
         - Provider Firm Bank Accounts
       description: |
         Retrieve provider bank account details.
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -464,21 +528,36 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BankAccountV2'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/BankAccountV2'
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
+
         '404':
           description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
     patch:
-      summary: Update provier bank details
+      summary: Update provider bank details
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: updateProviderFirmBankAccount
       tags:
         - Provider Firm Bank Accounts
@@ -487,10 +566,7 @@ paths:
         1) Deactivating bank details by setting `activeDateTo`
         2) Nominating bank detail as primary using `primary`=`true`
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -515,23 +591,42 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BankAccountV2'
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      providerFirmGUID:
+                        type: string
+                        description: Unique identifier of the created provider
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
+
         '404':
           description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
   /provider-firms/{providerFirmGUID}/offices:
     post:
       summary: Create an office for a provider firm
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: createProviderFirmOffice
       tags:
         - Provider Firm Offices
@@ -539,10 +634,7 @@ paths:
         Create new office details used by given provider firm.
         Setting `primary`=`true` results in `TODO: ?????`
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -563,37 +655,47 @@ paths:
               schema:
                 type: object
                 properties:
-                  providerFirmGUID:
-                    type: string
-                    description: Unique identifier of the created provider
-                  officeGUID:
-                    type: string
-                    description: Unique identifier of the created office
+                  data:
+                    type: object
+                    properties:
+                      providerFirmGUID:
+                        type: string
+                        description: Unique identifier of the created provider
+                      officeGUID:
+                        type: string
+                        description: Unique identifier of the created office
 
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0012'
-                  description: 'Bad data error code'
-
+                $ref: '#/components/schemas/400Response'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
+        '404':
+          description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
     get:
       summary: Retrieve a list of provider offices with optional filters
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmOffices
       tags:
         - Provider Firm Offices
@@ -601,10 +703,7 @@ paths:
         Retrieve office details for a given provider. Use this endpoint when you have `providerFirmGUID`.
         When you do not have `providerFirmGUID` - use `/provider-firms-offices?officeGUID=12345&allProviderOffices=true`
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -621,38 +720,44 @@ paths:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/OfficeV2'
-                  metadata:
-                    $ref: '#/components/schemas/PaginatedSearchV2'
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/OfficeV2'
+                      metadata:
+                        $ref: '#/components/schemas/PaginatedSearchV2'
+                      links:
+                        $ref: "#/components/schemas/LinksV2"
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0012'
-                  description: 'Bad data error code'
-
+                $ref: '#/components/schemas/400Response'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
   /provider-firms-offices:
 
     get:
       summary: Retrieve a list of provider offices with optional filters
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getOffices
       tags:
         - Provider Firm Offices
@@ -661,10 +766,7 @@ paths:
         1) Browse all active offices
         2) Browse all offices of a specific provider using one known `officeGUID`.
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: officeGUID
           in: query
           required: false
@@ -677,7 +779,7 @@ paths:
           in: query
           schema:
             type: boolean
-          description: use this filter in conjuction with `officeGUID` to get all offices for the provider that the office with specified guid belongs to
+          description: use this filter in conjunction with `officeGUID` to get all offices for the provider that the office with specified guid belongs to
         - $ref: '#/components/parameters/QPageNumber'
         - $ref: '#/components/parameters/QPageSize'
       responses:
@@ -688,47 +790,50 @@ paths:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/OfficeV2'
-                  metadata:
-                    $ref: '#/components/schemas/PaginatedSearchV2'
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/OfficeV2'
+                      metadata:
+                        $ref: '#/components/schemas/PaginatedSearchV2'
+                      links:
+                        $ref: "#/components/schemas/LinksV2"
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0012'
-                  description: 'Bad data error code'
-
+                $ref: '#/components/schemas/400Response'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
   /provider-firms/{providerFirmGUID}/offices/{officeGUID}:
     get:
       summary: Retrieve provider office details by GUID
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmOfficeByGUID
       tags:
         - Provider Firm Offices
       description: |
         Retrieve provider office details.
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -747,21 +852,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OfficeV2'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/OfficeV2'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
         '404':
           description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
     patch:
-      summary: Update provier office details
+      summary: Update provider office details
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: updateProviderFirmOffice
       tags:
         - Provider Firm Offices
@@ -773,10 +891,7 @@ paths:
         4) Setting `intervened` flag
         5) Assigning different bank details using `bankAccountDetailsGUID`
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -801,34 +916,48 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BankAccountV2'
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      providerFirmGUID:
+                        type: string
+                        description: Unique identifier of the created provider
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
         '404':
           description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
-  /provider-firms/{providerFirmGUID}/offices/{officeGUID}/liason-managers:
+  /provider-firms/{providerFirmGUID}/offices/{officeGUID}/liaison-managers:
     post:
-      summary: Create a liason manager for office. Creating new manager end-dates all other managers.
-      operationId: createProviderFirmOfficeLiasonManager
+      summary: Create a liaison manager for office. Creating new manager end-dates all other managers.
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
+      operationId: createProviderFirmOfficeLiaisonManager
       tags:
-        - Provider Firm Offices Liason Managers
+        - Provider Firm Offices Liaison Managers
       description: |
-        Create new liason manager for an office.
+        Create new liaison manager for an office.
         `TODO: rules for setting creating a manager at the head office level`
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -846,7 +975,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LiasonManagerCreateV2'
+              $ref: '#/components/schemas/LiaisonManagerCreateV2'
       responses:
         '201':
           description: Office created successfully
@@ -855,50 +984,53 @@ paths:
               schema:
                 type: object
                 properties:
-                  providerFirmGUID:
-                    type: string
-                    description: Unique identifier of the created provider
-                  officeGUID:
-                    type: string
-                    description: Unique identifier of the created office
-                  liasonManagerGUID:
-                    type: string
-                    description: Unique identifier of the created liason manager
+                  data:
+                    type: object
+                    properties:
+                      providerFirmGUID:
+                        type: string
+                        description: Unique identifier of the created provider
+                      officeGUID:
+                        type: string
+                        description: Unique identifier of the created office
+                      liaisonManagerGUID:
+                        type: string
+                        description: Unique identifier of the created liaison manager
 
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0012'
-                  description: 'Bad data error code'
+                $ref: '#/components/schemas/400Response'
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
 
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
     get:
-      summary: Retrieve liason managers for a given office office
-      operationId: getProviderFirmOfficeLiasonManagers
+      summary: Retrieve liaison managers for a given office office
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
+      operationId: getProviderFirmOfficeLiaisonManagers
       tags:
-        - Provider Firm Offices Liason Managers
+        - Provider Firm Offices Liaison Managers
       description: |
-        Retrieve provider office liason managers.
+        Retrieve provider office liaison managers.
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -919,28 +1051,43 @@ paths:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/LiasonManagerV2'
-                  metadata:
-                    $ref: '#/components/schemas/PaginatedSearchV2'
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LiaisonManagerV2'
+                      metadata:
+                        $ref: '#/components/schemas/PaginatedSearchV2'
+                      links:
+                        $ref: "#/components/schemas/LinksV2"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
         '404':
           description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
   /provider-firms/{providerFirmGUID}/offices/{officeGUID}/contract-managers:
     post:
-      summary: Assign a liason manager for office. Assigning a new manager end-dates all other managers.
+      summary: Assign a liaison manager for office. Assigning a new manager end-dates all other managers.
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: createProviderFirmOfficeContractManager
       tags:
         - Provider Firm Offices Contract Managers
@@ -948,10 +1095,7 @@ paths:
         Assigning a new contract manager for an office.
         `TODO: rules for setting creating a manager at the head office level`
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -978,50 +1122,53 @@ paths:
               schema:
                 type: object
                 properties:
-                  providerFirmGUID:
-                    type: string
-                    description: Unique identifier of the created provider
-                  officeGUID:
-                    type: string
-                    description: Unique identifier of the created office
-                  liasonManagerGUID:
-                    type: string
-                    description: Unique identifier of the created liason manager
+                  data:
+                    type: object
+                    properties:
+                      providerFirmGUID:
+                        type: string
+                        description: Unique identifier of the created provider
+                      officeGUID:
+                        type: string
+                        description: Unique identifier of the created office
+                      liaisonManagerGUID:
+                        type: string
+                        description: Unique identifier of the created liaison manager
 
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0012'
-                  description: 'Bad data error code'
+                $ref: '#/components/schemas/400Response'
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
 
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
     get:
       summary: Retrieve contract managers for a given office office
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmOfficeContractManagers
       tags:
         - Provider Firm Offices Contract Managers
       description: |
         Retrieve provider office contract managers.
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -1042,28 +1189,43 @@ paths:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/OfficeContractManagerV2'
-                  metadata:
-                    $ref: '#/components/schemas/PaginatedSearchV2'
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/OfficeContractManagerV2'
+                      metadata:
+                        $ref: '#/components/schemas/PaginatedSearchV2'
+                      links:
+                        $ref: "#/components/schemas/LinksV2"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
         '404':
           description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
   /provider-firms/{providerFirmGUID}/offices/{officeGUID}/practitioners:
     post:
       summary: Assign a practitioner (Barrister or Advocate) for office of a Chamber.
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: createProviderFirmOfficePractitioner
       tags:
         - Chamber Office Practitioners
@@ -1072,10 +1234,7 @@ paths:
         Use the GET `/provider-firms?type=Barrister` or `/provider-firms?type=Advocate` to see available `guid`s
         `TODO: how to remove?`
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -1102,50 +1261,53 @@ paths:
               schema:
                 type: object
                 properties:
-                  providerFirmGUID:
-                    type: string
-                    description: Unique identifier of the created provider
-                  officeGUID:
-                    type: string
-                    description: Unique identifier of the created office
-                  practitionerGUID:
-                    type: string
-                    description: Unique identifier of the created liason manager
+                  data:
+                    type: object
+                    properties:
+                      providerFirmGUID:
+                        type: string
+                        description: Unique identifier of the created provider
+                      officeGUID:
+                        type: string
+                        description: Unique identifier of the created office
+                      practitionerGUID:
+                        type: string
+                        description: Unique identifier of the created liaison manager
 
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0012'
-                  description: 'Bad data error code'
+                $ref: '#/components/schemas/400Response'
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
 
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
     get:
-      summary: Retrieve practirioners for a given chamber office
+      summary: Retrieve practitioners for a given chamber office
+      security:
+        - bearerAuth: [ ]
+        - AzureAD:
+            - api://<client-id>/access_as_user
       operationId: getProviderFirmOfficePractitioners
       tags:
         - Chamber Office Practitioners
       description: |
         Retrieve chamber office practitioners.
       parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/XClientId'
-        - $ref: '#/components/parameters/XClientVersion'
-        - $ref: '#/components/parameters/XEnv'
+        - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
           required: true
@@ -1166,32 +1328,52 @@ paths:
               schema:
                 type: object
                 properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/OfficePractitionerV2'
-                  metadata:
-                    $ref: '#/components/schemas/PaginatedSearchV2'
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/OfficePractitionerV2'
+                      metadata:
+                        $ref: '#/components/schemas/PaginatedSearchV2'
+                      links:
+                        $ref: "#/components/schemas/LinksV2"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Response'
         '404':
           description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
         '500':
           description: Server error
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                  example: 'P0013'
-                  description: 'Server error code'
+                $ref: '#/components/schemas/500Response'
 
 components:
-
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+    AzureAD:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/authorize
+          tokenUrl: https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token
+          scopes:
+            api://<client-id>/access_as_user: Access the API as an authenticated user
+
 
   schemas:
 
@@ -1206,26 +1388,58 @@ components:
       properties:
         guid:
           $ref: '#/components/schemas/BaseEntityGUIDV2'
-        version:
-          type: number
-          description: 'Record version (for audit and event concurrency)'
-          example: '12'
-        createdBy:
-          type: string
-          description: 'User ID from the auth token which resulted in creating this record'
-          example: 'john.smith.42'
-        createdTimestamp:
-          type: string
-          format: date-time
-          example: '2025-09-25T09:30:00Z'
-        lastUpdatedBy:
-          type: string
-          description: 'User ID from the auth token which resulted in updating this record last'
-          example: 'john.doe.24'
-        lastUpdatedTimestamp:
-          type: string
-          format: date-time
-          example: '2025-09-26T12:30:00Z'
+
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            errorCode:
+              type: string
+              example: 'P00XX'
+
+    400Response:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            errorCode:
+              type: string
+              example: 'P00XX'
+
+    403Response:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            errorCode:
+              type: string
+              example: 'P00XX'
+
+    404Response:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            errorCode:
+              type: string
+              example: 'P00NF'
+
+    500Response:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            errorCode:
+              type: string
+              example: 'P00SE'
+
 
 
     ProviderFirmTypeV2:
@@ -1236,7 +1450,6 @@ components:
         - Advocate
         - Barrister
 
-
     ProviderCreateV2:
       type: object
       required:
@@ -1244,23 +1457,27 @@ components:
         - name
       properties:
         type:
-          $ref: '#/components/schemas/ProviderFirmTypeV2'
-          description: 'Type of the provider firm. CWA ref: PO_VENDORS.ATTRIBUTE4. TODO: check the enum valuesx'
+          allOf:
+            - $ref: '#/components/schemas/ProviderFirmTypeV2'
+          description: 'Type of the provider firm. CWA ref: PO_VENDORS.ATTRIBUTE4. TODO: check the enum values'
         name:
           type: string
           description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
         activeDateTo:
           type: string
           format: date
-          description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE. TODO: check if this should be synched with head office available to date or if this is separate function'
+          description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE. TODO: check if this should be synced with head office available to date or if this is separate function'
         legalServicesProviderDetails:
-          $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
-          description: 'applicable only for type=Legal Services Provider'
+          allOf:
+            - $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
+          description: 'Applicable only for type=Legal Services Provider'
         practitionerDetails:
-          $ref: '#/components/schemas/PractitionerDetailsV2'
-          description: 'applicable only for type=Barrister / Advocate'
+          allOf:
+            - $ref: '#/components/schemas/PractitionerDetailsV2'
+          description: 'Applicable only for type=Barrister / Advocate'
         headOffice:
-          $ref: '#/components/schemas/OfficeCreateV2'
+          allOf:
+            - $ref: '#/components/schemas/OfficeCreateV2'
 
     ProviderV2:
       allOf:
@@ -1276,7 +1493,8 @@ components:
               description: 'Unique provider firm identifier'
               example: 'TODO: provide example'
             type:
-              $ref: '#/components/schemas/ProviderFirmTypeV2'
+              allOf:
+                - $ref: '#/components/schemas/ProviderFirmTypeV2'
               description: 'Type of the provider firm. CWA ref: PO_VENDORS.ATTRIBUTE4'
             name:
               type: string
@@ -1287,16 +1505,19 @@ components:
               format: date
               description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE'
             intervenedDetails:
-              $ref: '#/components/schemas/IntervenedProviderDetailsV2'
+              allOf:
+                - $ref: '#/components/schemas/IntervenedProviderDetailsV2'
             legalServicesProviderDetails:
-              $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
-              description: 'applicable only for type=Legal Services Provider'
+              allOf:
+                - $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
+              description: 'Applicable only for type=Legal Services Provider'
             practitionerDetails:
-              $ref: '#/components/schemas/PractitionerDetailsV2'
-              description: 'applicable only for type=Barrister / Advocate'
+              allOf:
+                - $ref: '#/components/schemas/PractitionerDetailsV2'
+              description: 'Applicable only for type=Barrister / Advocate'
             headOffice:
-              $ref: '#/components/schemas/HeadOfficeDetailsV2'
-
+              allOf:
+                - $ref: '#/components/schemas/HeadOfficeDetailsV2'
 
     ProviderPatchV2:
       type: object
@@ -1309,16 +1530,19 @@ components:
           format: date
           description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE'
         intervenedDetails:
-          $ref: '#/components/schemas/IntervenedProviderDetailsV2'
+          allOf:
+            - $ref: '#/components/schemas/IntervenedProviderDetailsV2'
         legalServicesProviderDetails:
-          $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
-          description: 'applicable only for type=Legal Services Provider'
+          allOf:
+            - $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
+          description: 'Applicable only for type=Legal Services Provider'
         practitionerDetails:
-          $ref: '#/components/schemas/PractitionerDetailsV2'
-          description: 'applicable only for type=Barrister / Advocate'
+          allOf:
+            - $ref: '#/components/schemas/PractitionerDetailsV2'
+          description: 'Applicable only for type=Barrister / Advocate'
         headOffice:
-          $ref: '#/components/schemas/HeadOfficeDetailsPatchV2'
-
+          allOf:
+            - $ref: '#/components/schemas/HeadOfficeDetailsPatchV2'
 
     LegalServicesProviderDetailsV2:
       type: object
@@ -1385,8 +1609,8 @@ components:
           $ref: '#/components/schemas/PaymentDetailsCreateV2'
         liaisonManager:
           oneOf:
-            - $ref: '#/components/schemas/LiasonManagerCreateV2'
-            - $ref: '#/components/schemas/OfficeLiasonManagerPatchV2'
+            - $ref: '#/components/schemas/LiaisonManagerCreateV2'
+            - $ref: '#/components/schemas/OfficeLiaisonManagerPatchV2'
         contractManager:
           $ref: '#/components/schemas/OfficeContractManagerCreateV2'
 
@@ -1493,11 +1717,11 @@ components:
           enum:
             - Y
             - N
-          description: 'CWA ref: PO_VENDORS.ATTRIBUTE13. TODO: Need better description of this field, any business rules? check if this should be synched with head office data or if this is separate function'
+          description: 'CWA ref: PO_VENDORS.ATTRIBUTE13. TODO: Need better description of this field, any business rules? check if this should be synced with head office data or if this is separate function'
         intervenedChangeDate:
           type: string
           format: date
-          description: 'CWA ref: PO_VENDORS.ATTRIBUTE15. TODO: Need better description of this field, any business rules? check if this should be synched with head office data or if this is separate function'
+          description: 'CWA ref: PO_VENDORS.ATTRIBUTE15. TODO: Need better description of this field, any business rules? check if this should be synced with head office data or if this is separate function'
 
 
     IntervenedOfficeDetailsV2:
@@ -1603,7 +1827,7 @@ components:
           oneOf:
             - $ref: '#/components/schemas/BankAccountCreateV2'
             - $ref: '#/components/schemas/OfficeBankAccountPatchV2'
-          description: 'Bank destails do not apply if paymentMethod=Cheque'
+          description: 'Bank details do not apply if paymentMethod=Cheque'
 
     PaymentDetailsV2:
       type: object
@@ -1711,7 +1935,7 @@ components:
         bankAccountDetailGUID:
           $ref: '#/components/schemas/BaseEntityGUIDV2'
 
-    LiasonManagerCreateV2:
+    LiaisonManagerCreateV2:
       type: object
       required:
         - firstName
@@ -1745,7 +1969,7 @@ components:
           format: date
           description: 'CWA ref: PO_VENDOR_CONTACTS.INACTIVE_DATE'
 
-    LiasonManagerV2:
+    LiaisonManagerV2:
       allOf:
         - $ref: '#/components/schemas/BaseEntityV2'
         - type: object
@@ -1782,10 +2006,10 @@ components:
               description: 'CWA ref: PO_VENDOR_CONTACTS.INACTIVE_DATE'
 
 
-    OfficeLiasonManagerPatchV2:
+    OfficeLiaisonManagerPatchV2:
       type: object
       properties:
-        liasonManagerGUID:
+        liaisonManagerGUID:
           $ref: '#/components/schemas/BaseEntityGUIDV2'
 
     OfficeContractManagerCreateV2:
@@ -1872,6 +2096,8 @@ components:
           $ref: '#/components/schemas/SearchCriteriaV2'
         pagination:
           $ref: '#/components/schemas/PaginationV2'
+        sort:
+          $ref: '#/components/schemas/SortV2'
 
     SearchCriteriaV2:
       type: object
@@ -1906,42 +2132,62 @@ components:
           type: number
           example: 10
           description: 'Page size used for this search'
-        totalResults:
+        totalPages:
+          type: number
+          example: 5
+          description: 'Total number of pages'
+        totalItems:
           type: number
           example: 123
           description: 'Total number of records for given search request'
 
+    SortV2:
+      type: object
+      properties:
+        field:
+          type: string
+          example: "sortByOption"
+        direction:
+          type: string
+          enum: [ asc, desc ]
+          example: "asc"
+
+    LinksV2:
+      type: object
+      properties:
+        self:
+          type: string
+          example: "/example?page=2&pageSize=10"
+          format: uri
+        next:
+          type: string
+          example: "/example?page=3&pageSize=10"
+          format: uri
+        prev:
+          type: string
+          example: "/example?page=1&pageSize=10"
+          format: uri
+        first:
+          type: string
+          example: "/example?page=1&pageSize=10"
+          format: uri
+        last:
+          type: string
+          example: "/example?page=5&pageSize=10"
+          format: uri
+
   parameters:
-    XCorrelationId:
-      name: x-correlation-id
+    TraceParentHeader:
+      name: transparent
       in: header
       required: false
       schema:
         type: string
-      description: Correlation ID for tracing requests
-
-    XClientId:
-      name: x-client-id
-      in: header
-      required: true
-      schema:
-        type: string
-      description: Identifier for the calling application
-
-    XClientVersion:
-      name: x-client-version
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Version of the client application
-    XEnv:
-      name: x-env
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Environment indicator (e.g., dev, staging, prod)
+        pattern: '^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$'
+      description: >
+        W3C Trace Context header used for distributed tracing.
+        Format: 00-<trace-id>-<span-id>-<trace-flags>.
+        Example: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-0
 
     QPageNumber:
       name: page
