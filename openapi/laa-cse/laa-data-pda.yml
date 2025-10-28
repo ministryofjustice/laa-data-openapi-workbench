@@ -1237,15 +1237,18 @@ paths:
               schema:
                 type: object
                 properties:
-                  providerFirmGUID:
-                    type: string
-                    description: Unique identifier of the created provider
-                  officeGUID:
-                    type: string
-                    description: Unique identifier of the created office
-                  practitionerGUID:
-                    type: string
-                    description: Unique identifier of the created liaison manager
+                  data:
+                    type: object
+                    properties:
+                      providerFirmGUID:
+                        type: string
+                        description: Unique identifier of the created provider
+                      officeGUID:
+                        type: string
+                        description: Unique identifier of the created office
+                      practitionerGUID:
+                        type: string
+                        description: Unique identifier of the created liaison manager
 
         '400':
           description: Invalid input
@@ -1362,127 +1365,144 @@ components:
         guid:
           $ref: '#/components/schemas/BaseEntityGUIDV2'
 
+
     ErrorResponse:
       type: object
       properties:
-        timestamp:
-          type: string
-          format: date-time
-        status:
-          type: integer
         error:
-          type: string
-        code:
-          type: string
-          example: 'P00XX'
-        message:
-          type: string
-          example: 'Invalid provider ID format'
-        path:
-          type: string
-          example: '/api/providers'
-        traceId:
-          type: string
-          example: 'abc123-def456-ghi789'
+          type: object
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+            status:
+              type: integer
+            error:
+              type: string
+            code:
+              type: string
+              example: 'P00XX'
+            message:
+              type: string
+              example: 'Invalid provider ID format'
+            path:
+              type: string
+              example: '/api/providers'
+            traceId:
+              type: string
+              example: 'abc123-def456-ghi789'
 
     400Response:
       type: object
       properties:
-        timestamp:
-          type: string
-          format: date-time
-        status:
-          type: integer
-          example: 400
         error:
-          type: string
-        errorCode:
-          type: string
-          example: 'P00XX'
-        message:
-          type: string
-          example: 'Invalid input provided. Please check your request and try again.'
-        path:
-          type: string
-          example: '/providers-XXX'
-        traceId:
-          type: string
-          example: 'abc123-def456-ghi789'
+          type: object
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+            status:
+              type: integer
+              example: 400
+            error:
+              type: string
+            errorCode:
+              type: string
+              example: 'P00XX'
+            message:
+              type: string
+              example: 'Invalid input provided. Please check your request and try again.'
+            path:
+              type: string
+              example: '/providers-XXX'
+            traceId:
+              type: string
+              example: 'abc123-def456-ghi789'
 
     403Response:
       type: object
       properties:
-        timestamp:
-          type: string
-          format: date-time
-        status:
-          type: integer
-          example: 403
         error:
-          type: string
-          example: 'Forbidden'
-        errorCode:
-          type: string
-          example: 'P00XX'
-        message:
-          type: string
-          example: 'Access denied. You do not have permission to perform this action.'
-        path:
-          type: string
-          example: '/providers-XXX'
-        traceId:
-          type: string
-          example: 'abc123-def456-ghi789'
+          type: object
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+            status:
+              type: integer
+              example: 403
+            error:
+              type: string
+              example: 'Forbidden'
+            errorCode:
+              type: string
+              example: 'P00XX'
+            message:
+              type: string
+              example: 'Access denied. You do not have permission to perform this action.'
+            path:
+              type: string
+              example: '/providers-XXX'
+            traceId:
+              type: string
+              example: 'abc123-def456-ghi789'
 
     404Response:
       type: object
       properties:
-        timestamp:
-          type: string
-          format: date-time
-        status:
-          type: integer
-          example: 404
         error:
-          type: string
-          example: "Not Found"
-        errorCode:
-          type: string
-          example: 'P00NF'
-        message:
-          type: string
-          example: "The requested provider could not be found."
-        path:
-          type: string
-          example: '/providers-XXX'
-        traceId:
-          type: string
-          example: 'abc123-def456-ghi789'
+          type: object
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+            status:
+              type: integer
+              example: 404
+            error:
+              type: string
+              example: "Not Found"
+            errorCode:
+              type: string
+              example: 'P00NF'
+            message:
+              type: string
+              example: "The requested provider could not be found."
+            path:
+              type: string
+              example: '/providers-XXX'
+            traceId:
+              type: string
+              example: 'abc123-def456-ghi789'
 
     500Response:
       type: object
       properties:
-        timestamp:
-          type: string
-          format: date-time
-        status:
-          type: integer
-          example: 500
         error:
-          type: string
-          example: "Internal Server Error"
-        errorCode:
-          type: string
-          example: 'P00SE'
-        message:
-          type: string
-          example: "An unexpected error occurred. Please try again later."
-        path:
-          type: string
-          example: '/providers-XXX'
-        traceId:
-          type: string
-          example: 'abc123-def456-ghi789'
+          type: object
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+            status:
+              type: integer
+              example: 500
+            error:
+              type: string
+              example: "Internal Server Error"
+            errorCode:
+              type: string
+              example: 'P00SE'
+            message:
+              type: string
+              example: "An unexpected error occurred. Please try again later."
+            path:
+              type: string
+              example: '/providers-XXX'
+            traceId:
+              type: string
+              example: 'abc123-def456-ghi789'
+
 
 
     ProviderFirmTypeV2:
@@ -2128,6 +2148,8 @@ components:
           $ref: '#/components/schemas/SearchCriteriaV2'
         pagination:
           $ref: '#/components/schemas/PaginationV2'
+        sort:
+          $ref: '#/components/schemas/SortV2'
 
     SearchCriteriaV2:
       type: object
@@ -2170,6 +2192,17 @@ components:
           type: number
           example: 123
           description: 'Total number of records for given search request'
+
+    SortV2:
+      type: object
+      properties:
+        field:
+          type: string
+          example: "sortByOption"
+        direction:
+          type: string
+          enum: [ asc, desc ]
+          example: "asc"
 
     LinksV2:
       type: object
