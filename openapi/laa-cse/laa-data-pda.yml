@@ -29,6 +29,12 @@ paths:
             items:
               type: string
           description: Filter by contract manager ID (multi)
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Fuzzy search by contract manager name (searches both first and last names)
         - $ref: '#/components/parameters/QPageNumber'
         - $ref: '#/components/parameters/QPageSize'
       responses:
@@ -208,6 +214,14 @@ paths:
             items:
               type: string
           description: Filter by Barrister or Advocate roll number (multi)
+        - name: parentFirmId
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: Filter by parent firm GUID (multi)
         - $ref: '#/components/parameters/QPageNumber'
         - $ref: '#/components/parameters/QPageSize'
       responses:
@@ -354,11 +368,11 @@ paths:
                 $ref: '#/components/schemas/403Response'
 
         '404':
-            description: Provider not found
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/404Response'
+          description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
         '500':
           description: Server error
           content:
@@ -1483,6 +1497,8 @@ components:
         name:
           type: string
           description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
+        parentFirm:
+          $ref: '#/components/schemas/BaseEntityGUIDV2'
         activeDateTo:
           type: string
           format: date
@@ -1601,8 +1617,11 @@ components:
           example: 'John Smith'
         level:
           type: string
+          enum:
+           - Pupil
+           - Junior
+           - KC
           description: 'Barrister or Advocate level. CWA ref: PO_VENDORS.ATTRIBUTE10. TODO: Need better description of this field, any business rules?'
-          example: 'TODO: provide example'
         rollNumber:
           type: string
           description: 'Bar Council or Solicitors Regulation Authority roll number. CWA ref: PO_VENDORS.ATTRIBUTE11. TODO: Need better description of this field, any business rules?'
@@ -1628,9 +1647,7 @@ components:
         paymentDetails:
           $ref: '#/components/schemas/PaymentDetailsCreateV2'
         liaisonManager:
-          oneOf:
-            - $ref: '#/components/schemas/LiaisonManagerCreateV2'
-            - $ref: '#/components/schemas/OfficeLiaisonManagerPatchV2'
+            $ref: '#/components/schemas/LiaisonManagerCreateV2'
         contractManager:
           $ref: '#/components/schemas/OfficeContractManagerCreateV2'
 
@@ -1844,10 +1861,8 @@ components:
             - Electronic
           description: 'CWA ref: PO_VENDOR_SITES_ALL.EDI_PAYMENT_METHOD. TODO: check the enum values. Any business rules?'
         bankAccountDetails:
-          oneOf:
-            - $ref: '#/components/schemas/BankAccountCreateV2'
-            - $ref: '#/components/schemas/OfficeBankAccountPatchV2'
-          description: 'Bank details do not apply if paymentMethod=Cheque'
+         $ref: '#/components/schemas/BankAccountCreateV2'
+        description: 'Bank details do not apply if paymentMethod=Cheque'
 
     PaymentDetailsV2:
       type: object
@@ -2078,6 +2093,11 @@ components:
           type: string
           example: 'Smith'
           description: 'CWA ref: ???'
+        email:
+         type: string
+         format: email
+         example: 'john.smith@example.com'
+         description: 'CWA ref: ???'
 
     OfficeContractManagerV2:
       allOf:
@@ -2100,6 +2120,11 @@ components:
               type: string
               example: 'Smith'
               description: 'CWA ref: ???'
+            email:
+             type: string
+             format: email
+             example: 'john.smith@example.com'
+             description: 'CWA ref: ???'
             activeDateTo:
               type: string
               format: date
