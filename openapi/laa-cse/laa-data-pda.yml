@@ -19,6 +19,7 @@ paths:
         Retrieve a list of contract managers. These are employee records in CWA and potentially we need to get this information from SiLAS.
         Contract managers are required for assigning contracts and schedules to a provider firm.
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: contractManagerId
           in: query
@@ -28,6 +29,12 @@ paths:
             items:
               type: string
           description: Filter by contract manager ID (multi)
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Fuzzy search by contract manager name (searches both first and last names)
         - $ref: '#/components/parameters/QPageNumber'
         - $ref: '#/components/parameters/QPageSize'
       responses:
@@ -95,6 +102,7 @@ paths:
         `legalServicesProviderDetails` applicable only to `type`=`Legal Services Provider`.
         `practitionerDetails` applicable only to `type`=`Barrister` or `type`=`Advocate`.
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
       requestBody:
         required: true
@@ -147,6 +155,7 @@ paths:
       tags:
         - Provider Firms
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: query
@@ -205,6 +214,14 @@ paths:
             items:
               type: string
           description: Filter by Barrister or Advocate roll number (multi)
+        - name: parentFirmId
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: Filter by parent firm GUID (multi)
         - $ref: '#/components/parameters/QPageNumber'
         - $ref: '#/components/parameters/QPageSize'
       responses:
@@ -260,6 +277,7 @@ paths:
       description: |
         Retrieve basic provider details. Use sub resources to retrieve other information.
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -313,6 +331,7 @@ paths:
         4) Deactivating provider firm by setting `activeDateTo`
         5) Setting `intervened` flag
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -349,11 +368,11 @@ paths:
                 $ref: '#/components/schemas/403Response'
 
         '404':
-            description: Provider not found
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/404Response'
+          description: Provider not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404Response'
         '500':
           description: Server error
           content:
@@ -375,6 +394,7 @@ paths:
         Create new bank account details used by given provider firm.
         Setting `primary`=`true` results in `TODO: ?????`
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -440,6 +460,7 @@ paths:
         Retrieve bank account details for a given provider. This list may be be used to get 
         `guid`s that can be used in the office PATCH operation to set alternative bank account details.
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -509,6 +530,7 @@ paths:
       description: |
         Retrieve provider bank account details.
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -566,6 +588,7 @@ paths:
         1) Deactivating bank details by setting `activeDateTo`
         2) Nominating bank detail as primary using `primary`=`true`
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -634,6 +657,7 @@ paths:
         Create new office details used by given provider firm.
         Setting `primary`=`true` results in `TODO: ?????`
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -703,6 +727,7 @@ paths:
         Retrieve office details for a given provider. Use this endpoint when you have `providerFirmGUID`.
         When you do not have `providerFirmGUID` - use `/provider-firms-offices?officeGUID=12345&allProviderOffices=true`
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -766,6 +791,7 @@ paths:
         1) Browse all active offices
         2) Browse all offices of a specific provider using one known `officeGUID`.
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: officeGUID
           in: query
@@ -833,6 +859,7 @@ paths:
       description: |
         Retrieve provider office details.
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -891,6 +918,7 @@ paths:
         4) Setting `intervened` flag
         5) Assigning different bank details using `bankAccountDetailsGUID`
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -957,6 +985,7 @@ paths:
         Create new liaison manager for an office.
         `TODO: rules for setting creating a manager at the head office level`
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -1030,6 +1059,7 @@ paths:
       description: |
         Retrieve provider office liaison managers.
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -1095,6 +1125,7 @@ paths:
         Assigning a new contract manager for an office.
         `TODO: rules for setting creating a manager at the head office level`
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -1168,6 +1199,7 @@ paths:
       description: |
         Retrieve provider office contract managers.
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -1234,6 +1266,7 @@ paths:
         Use the GET `/provider-firms?type=Barrister` or `/provider-firms?type=Advocate` to see available `guid`s
         `TODO: how to remove?`
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -1307,6 +1340,7 @@ paths:
       description: |
         Retrieve chamber office practitioners.
       parameters:
+        - $ref: '#/components/parameters/XCorrelationId'
         - $ref: '#/components/parameters/TraceParentHeader'
         - name: providerFirmGUID
           in: path
@@ -1463,6 +1497,8 @@ components:
         name:
           type: string
           description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
+        parentFirm:
+          $ref: '#/components/schemas/BaseEntityGUIDV2'
         activeDateTo:
           type: string
           format: date
@@ -1581,8 +1617,11 @@ components:
           example: 'John Smith'
         level:
           type: string
+          enum:
+           - Pupil
+           - Junior
+           - KC
           description: 'Barrister or Advocate level. CWA ref: PO_VENDORS.ATTRIBUTE10. TODO: Need better description of this field, any business rules?'
-          example: 'TODO: provide example'
         rollNumber:
           type: string
           description: 'Bar Council or Solicitors Regulation Authority roll number. CWA ref: PO_VENDORS.ATTRIBUTE11. TODO: Need better description of this field, any business rules?'
@@ -1608,9 +1647,7 @@ components:
         paymentDetails:
           $ref: '#/components/schemas/PaymentDetailsCreateV2'
         liaisonManager:
-          oneOf:
-            - $ref: '#/components/schemas/LiaisonManagerCreateV2'
-            - $ref: '#/components/schemas/OfficeLiaisonManagerPatchV2'
+            $ref: '#/components/schemas/LiaisonManagerCreateV2'
         contractManager:
           $ref: '#/components/schemas/OfficeContractManagerCreateV2'
 
@@ -1824,10 +1861,8 @@ components:
             - Electronic
           description: 'CWA ref: PO_VENDOR_SITES_ALL.EDI_PAYMENT_METHOD. TODO: check the enum values. Any business rules?'
         bankAccountDetails:
-          oneOf:
-            - $ref: '#/components/schemas/BankAccountCreateV2'
-            - $ref: '#/components/schemas/OfficeBankAccountPatchV2'
-          description: 'Bank details do not apply if paymentMethod=Cheque'
+         $ref: '#/components/schemas/BankAccountCreateV2'
+        description: 'Bank details do not apply if paymentMethod=Cheque'
 
     PaymentDetailsV2:
       type: object
@@ -2058,6 +2093,11 @@ components:
           type: string
           example: 'Smith'
           description: 'CWA ref: ???'
+        email:
+         type: string
+         format: email
+         example: 'john.smith@example.com'
+         description: 'CWA ref: ???'
 
     OfficeContractManagerV2:
       allOf:
@@ -2080,6 +2120,11 @@ components:
               type: string
               example: 'Smith'
               description: 'CWA ref: ???'
+            email:
+             type: string
+             format: email
+             example: 'john.smith@example.com'
+             description: 'CWA ref: ???'
             activeDateTo:
               type: string
               format: date
@@ -2177,6 +2222,13 @@ components:
           format: uri
 
   parameters:
+    XCorrelationId:
+      name: x-correlation-id
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Correlation ID for tracing requests
     TraceParentHeader:
       name: transparent
       in: header
