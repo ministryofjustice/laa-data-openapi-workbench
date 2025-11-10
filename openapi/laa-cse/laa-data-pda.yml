@@ -1,2264 +1,2329 @@
 openapi: 3.0.3
 info:
-  title: Provider API
-  version: 1.0.0
-  description: API for managing legal service providers, including solicitors, chambers, and advocates.
+ title: Provider API
+ version: 1.0.0
+ description: API for managing legal service providers, including solicitors, chambers, and advocates.
 
 
 paths:
-  /provider-contact-managers:
-    get:
-      summary: Retrieve a list of contract managers
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      tags:
-        - Contract Managers
-      description: |
-        Retrieve a list of contract managers. These are employee records in CWA and potentially we need to get this information from SiLAS.
-        Contract managers are required for assigning contracts and schedules to a provider firm.
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: contractManagerId
-          in: query
-          required: false
-          schema:
+ /provider-events:
+  get:
+   summary: Retrieve a list of events
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   tags:
+    - Events
+   description: |
+    Provides capability to view all events that have been emitted by the microservice
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - name: eventType
+      in: query
+      required: false
+      schema:
+       type: array
+       items:
+        $ref: '#/components/schemas/EventTypeV2'
+      description: Filter by event type (multi)
+    - name: correlationId
+      in: query
+      required: false
+      schema:
+       type: string
+      description: Filter by correlation Id
+    - $ref: '#/components/parameters/QPageNumber'
+    - $ref: '#/components/parameters/QPageSize'
+   responses:
+    '200':
+     description: List of events matching the filters
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           content:
             type: array
             items:
-              type: string
-          description: Filter by contract manager ID (multi)
-        - name: name
-          in: query
-          required: false
-          schema:
-            type: string
-          description: Fuzzy search by contract manager name (searches both first and last names)
-        - $ref: '#/components/parameters/QPageNumber'
-        - $ref: '#/components/parameters/QPageSize'
-      responses:
-        '200':
-          description: List of providers matching the filters
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      content:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/ContractManagerV2'
-                      metadata:
-                        $ref: '#/components/schemas/PaginatedSearchV2'
-                      links:
-                        $ref: '#/components/schemas/LinksV2'
+             $ref: '#/components/schemas/EventV2'
+           metadata:
+            $ref: '#/components/schemas/PaginatedSearchV2'
+           links:
+            $ref: '#/components/schemas/LinksV2'
 
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Response'
+    '400':
+     description: Invalid input
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/400Response'
 
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
 
-        '404':
-          description: Provider not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Response'
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
 
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
 
-  /provider-firms:
-    post:
-      summary: Create a provider firm
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: createProviderFirm
-      tags:
-        - Provider Firms
-      description: |
-        Adds one legal service providers (e.g., solicitors, chambers, advocates) to the system.
-        Each provider must include a name, type, and other optional metadata. 
-        The request body should contain a `provider`, where each item follows the `ProviderCreateV2` schema.
-        `legalServicesProviderDetails` applicable only to `type`=`Legal Services Provider`.
-        `practitionerDetails` applicable only to `type`=`Barrister` or `type`=`Advocate`.
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProviderCreateV2'
-      responses:
-        '201':
-          description: Provider created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      providerFirmGUID:
-                        type: string
-                        description: Unique identifier of the created provider
+ /provider-events/{eventGUID}:
+  get:
+   summary: Retrieve providers with optional filters
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: getProviderFirms
+   tags:
+    - Events
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - name: eventGUID
+      in: query
+      required: false
+      schema:
+       type: string
+      description: Filter by event GUID
+   responses:
+    '200':
+     description: List of providers matching the filters
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          $ref: '#/components/schemas/EventV2'
+    '400':
+     description: Invalid input
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/400Response'
 
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Response'
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
 
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
 
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-    get:
-      summary: Retrieve providers with optional filters
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: getProviderFirms
-      tags:
-        - Provider Firms
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: query
-          required: false
-          schema:
+ /provider-contact-managers:
+  get:
+   summary: Retrieve a list of contract managers
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   tags:
+    - Contract Managers
+   description: |
+    Retrieve a list of contract managers. These are employee records in CWA and potentially we need to get this information from SiLAS.
+    Contract managers are required for assigning contracts and schedules to a provider firm.
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - name: contractManagerId
+      in: query
+      required: false
+      schema:
+       type: array
+       items:
+        type: string
+      description: Filter by contract manager ID (multi)
+    - name: name
+      in: query
+      required: false
+      schema:
+       type: string
+      description: Fuzzy search by contract manager name (searches both first and last names)
+    - $ref: '#/components/parameters/QPageNumber'
+    - $ref: '#/components/parameters/QPageSize'
+   responses:
+    '200':
+     description: List of providers matching the filters
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           content:
             type: array
             items:
-              type: string
-          description: Filter by provider firm GUID (multi)
-        - name: providerFirmId
-          in: query
-          required: false
-          schema:
+             $ref: '#/components/schemas/ContractManagerV2'
+           metadata:
+            $ref: '#/components/schemas/PaginatedSearchV2'
+           links:
+            $ref: '#/components/schemas/LinksV2'
+
+    '400':
+     description: Invalid input
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/400Response'
+
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
+
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+
+ /provider-firms:
+  post:
+   summary: Create a provider firm
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: createProviderFirm
+   tags:
+    - Provider Firms
+   description: |
+    Adds one legal service providers (e.g., solicitors, chambers, advocates) to the system.
+    Each provider must include a name, type, and other optional metadata. 
+    The request body should contain a `provider`, where each item follows the `ProviderCreateV2` schema.
+    `legalServicesProviderDetails` applicable only to `type`=`Legal Services Provider`.
+    `practitionerDetails` applicable only to `type`=`Barrister` or `type`=`Advocate`.
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+   requestBody:
+    required: true
+    content:
+     application/json:
+      schema:
+       $ref: '#/components/schemas/ProviderCreateV2'
+   responses:
+    '201':
+     description: Provider created successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           providerFirmGUID:
+            type: string
+            description: Unique identifier of the created provider
+
+    '400':
+     description: Invalid input
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/400Response'
+
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+  get:
+   summary: Retrieve providers with optional filters
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: getProviderFirms
+   tags:
+    - Provider Firms
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - name: providerFirmGUID
+      in: query
+      required: false
+      schema:
+       type: array
+       items:
+        type: string
+      description: Filter by provider firm GUID (multi)
+    - name: providerFirmId
+      in: query
+      required: false
+      schema:
+       type: array
+       items:
+        type: string
+      description: Filter by provider firm ID (multi)
+    - name: name
+      in: query
+      required: false
+      schema:
+       type: string
+      description: Filter by provider name
+    - name: activeStatus
+      in: query
+      required: false
+      schema:
+       type: string
+       enum:
+        - All
+        - Active
+        - ContingentLiability
+        - ActiveOrContingentLiability
+      description: Filter by provider number
+    - name: type
+      in: query
+      required: false
+      schema:
+       type: array
+       items:
+        $ref: '#/components/schemas/ProviderFirmTypeV2'
+      description: Filter by provider type (multi)
+    - name: officeAccountNumber
+      in: query
+      required: false
+      schema:
+       type: array
+       items:
+        type: string
+      description: Filter by office account number (multi)
+    - name: practitionerRollNumber
+      in: query
+      required: false
+      schema:
+       type: array
+       items:
+        type: string
+      description: Filter by Barrister or Advocate roll number (multi)
+    - name: chamberGUIDOrFirmId
+      in: query
+      required: false
+      schema:
+       type: array
+       items:
+        type: string
+      description: Filter by chamber firm GUID or ID (multi)
+    - $ref: '#/components/parameters/QPageNumber'
+    - $ref: '#/components/parameters/QPageSize'
+   responses:
+    '200':
+     description: List of providers matching the filters
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           content:
             type: array
             items:
-              type: string
-          description: Filter by provider firm ID (multi)
-        - name: name
-          in: query
-          required: false
-          schema:
+             $ref: '#/components/schemas/ProviderV2'
+           metadata:
+            $ref: '#/components/schemas/PaginatedSearchV2'
+           links:
+            $ref: "#/components/schemas/LinksV2"
+    '400':
+     description: Invalid input
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/400Response'
+
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+
+ /provider-firms/{providerFirmGUIDorFirmId}:
+  get:
+   summary: Retrieve provider details by GUID
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: getProviderFirmByGUIDorFirmId
+   tags:
+    - Provider Firms
+   description: |
+    Retrieve basic provider details. Use sub resources to retrieve other information.
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+   responses:
+    '200':
+     description: Provider details retrieved successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          $ref: '#/components/schemas/ProviderV2'
+
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+  patch:
+   summary: Update provider details
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: updateProviderFirm
+   tags:
+    - Provider Firms
+   description: |
+    Updating provider details endpoint is used for the following use cases: 
+    1) Updating company name
+    2) Updating legal service provider basic details
+    3) Updating Barrister or Advocate basic details
+    4) Deactivating provider firm by setting `activeDateTo`
+    5) Setting `intervened` flag
+    `TODO: any cascading effect functions e.g. does end dating a firm cascade to offices? (not limited to this question, any cascading)`
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+   requestBody:
+    required: true
+    content:
+     application/json:
+      schema:
+       $ref: '#/components/schemas/ProviderPatchV2'
+   responses:
+    '200':
+     description: Provider details retrieved successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           providerFirmGUID:
             type: string
-          description: Filter by provider name
-        - name: activeStatus
-          in: query
-          required: false
-          schema:
+            description: Unique identifier of the created provider
+
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+
+ /provider-firms/{providerFirmGUIDorFirmId}/bank-details:
+  post:
+   summary: Create bank account details for a provider firm
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: createProviderFirmBankAccount
+   tags:
+    - Provider Firm Bank Accounts
+   description: |
+    Create new bank account details used by given provider firm.
+    Setting `primary`=`true` results in `TODO: ?????`
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+   requestBody:
+    required: true
+    content:
+     application/json:
+      schema:
+       $ref: '#/components/schemas/BankAccountCreateV2'
+   responses:
+    '201':
+     description: Bank account created successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           providerFirmGUID:
             type: string
-            enum:
-              - All
-              - Active
-              - ContingentLiability
-              - ActiveOrContingentLiability
-          description: Filter by provider number
-        - name: type
-          in: query
-          required: false
-          schema:
+            description: Unique identifier of the created provider
+           bankAccountDetailGUID:
+            type: string
+            description: Unique identifier of the created bank detail
+
+    '400':
+     description: Invalid input
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/400Response'
+
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+
+  get:
+   summary: Retrieve a list of provider bank accounts with optional filters
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: getProviderFirmBankAccounts
+   tags:
+    - Provider Firm Bank Accounts
+   description: |
+    Retrieve bank account details for a given provider. This list may be be used to get 
+    `guid`s that can be used in the office PATCH operation to set alternative bank account details.
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+    - $ref: '#/components/parameters/QPageNumber'
+    - $ref: '#/components/parameters/QPageSize'
+   responses:
+    '200':
+     description: List of providers matching the filters
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           content:
             type: array
             items:
-              $ref: '#/components/schemas/ProviderFirmTypeV2'
-          description: Filter by provider type (multi)
-        - name: officeAccountNumber
-          in: query
-          required: false
-          schema:
+             $ref: '#/components/schemas/BankAccountV2'
+           metadata:
+            $ref: '#/components/schemas/PaginatedSearchV2'
+           links:
+            $ref: "#/components/schemas/LinksV2"
+    '400':
+     description: Invalid input
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/400Response'
+
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
+
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+
+ /provider-firms/{providerFirmGUIDorFirmId}/bank-details/{bankAccountDetailGUID}:
+  get:
+   summary: Retrieve provider bank details by GUID
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: getProviderFirmBankAccountByGUID
+   tags:
+    - Provider Firm Bank Accounts
+   description: |
+    Retrieve provider bank account details.
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+    - $ref: '#/components/parameters/BankAccountDetailGUID'
+   responses:
+    '200':
+     description: Provider details retrieved successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          $ref: '#/components/schemas/BankAccountV2'
+
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+  patch:
+   summary: Update provider bank details
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: updateProviderFirmBankAccount
+   tags:
+    - Provider Firm Bank Accounts
+   description: |
+    Updating provider bank details endpoint is used for the following use cases:
+    1) Deactivating bank details by setting `activeDateTo` `TODO: what effect does this have on office that have it assigned?`
+    2) Nominating bank detail as primary using `primary`=`true` `TODO: does this have a functional effect in the backend?`
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+    - $ref: '#/components/parameters/BankAccountDetailGUID'
+   requestBody:
+    required: true
+    content:
+     application/json:
+      schema:
+       $ref: '#/components/schemas/BankAccountPatchV2'
+   responses:
+    '200':
+     description: Provider details retrieved successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           providerFirmGUID:
+            type: string
+            description: Unique identifier of the created provider
+
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+
+ /provider-firms/{providerFirmGUIDorFirmId}/offices:
+  post:
+   summary: Create an office for a provider firm
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: createProviderFirmOffice
+   tags:
+    - Provider Firm Offices
+   description: |
+    Create new office details used by given provider firm.
+    Setting `primary`=`true` results in `TODO: ?????`
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+   requestBody:
+    required: true
+    content:
+     application/json:
+      schema:
+       $ref: '#/components/schemas/OfficeCreateV2'
+   responses:
+    '201':
+     description: Office created successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           providerFirmGUID:
+            type: string
+            description: Unique identifier of the created provider
+           officeGUID:
+            type: string
+            description: Unique identifier of the created office
+
+    '400':
+     description: Invalid input
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/400Response'
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+
+  get:
+   summary: Retrieve a list of provider offices with optional filters
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: getProviderFirmOffices
+   tags:
+    - Provider Firm Offices
+   description: |
+    Retrieve office details for a given provider. Use this endpoint when you have `providerFirmGUID`.
+    When you do not have `providerFirmGUID` - use `/provider-firms-offices?officeGUID=12345&allProviderOffices=true`
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+    - $ref: '#/components/parameters/QPageNumber'
+    - $ref: '#/components/parameters/QPageSize'
+   responses:
+    '200':
+     description: List of providers matching the filters
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           content:
             type: array
             items:
-              type: string
-          description: Filter by office account number (multi)
-        - name: practitionerRollNumber
-          in: query
-          required: false
-          schema:
+             $ref: '#/components/schemas/OfficeV2'
+           metadata:
+            $ref: '#/components/schemas/PaginatedSearchV2'
+           links:
+            $ref: "#/components/schemas/LinksV2"
+    '400':
+     description: Invalid input
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/400Response'
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+
+ /provider-firms-offices:
+
+  get:
+   summary: Retrieve a list of provider offices with optional filters
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: getOffices
+   tags:
+    - Provider Firm Offices
+   description: |
+    Retrieve office details when you do not have `providerFirmGUID` or `firmId`. Covers the following use cases:
+    1) Browse all active offices
+    2) Browse all offices of a specific provider using one known `officeGUID` or `officeCode`.
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - name: officeGUID
+      in: query
+      required: false
+      schema:
+       type: array
+       items:
+        type: string
+      description: Filter by provider office GUID (multi)
+    - name: officeCode
+      in: query
+      required: false
+      schema:
+       type: array
+       items:
+        type: string
+      description: Filter by provider office code (multi)
+    - name: allProviderOffices
+      in: query
+      schema:
+       type: boolean
+      description: use this filter in conjunction with `officeGUID` or `officeCode` to get all offices for the provider that the office with specified guid belongs to
+    - $ref: '#/components/parameters/QPageNumber'
+    - $ref: '#/components/parameters/QPageSize'
+   responses:
+    '200':
+     description: List of providers matching the filters
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           content:
             type: array
             items:
-              type: string
-          description: Filter by Barrister or Advocate roll number (multi)
-        - name: parentFirmId
-          in: query
-          required: false
-          schema:
+             $ref: '#/components/schemas/OfficeV2'
+           metadata:
+            $ref: '#/components/schemas/PaginatedSearchV2'
+           links:
+            $ref: "#/components/schemas/LinksV2"
+    '400':
+     description: Invalid input
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/400Response'
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+
+ /provider-firms/{providerFirmGUIDorFirmId}/offices/{officeGUIDorCode}:
+  get:
+   summary: Retrieve provider office details by GUID
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: getProviderFirmOfficeByGUID
+   tags:
+    - Provider Firm Offices
+   description: |
+    Retrieve provider office details.
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+    - $ref: '#/components/parameters/OfficeGUIDorCode'
+   responses:
+    '200':
+     description: Provider details retrieved successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          $ref: '#/components/schemas/OfficeV2'
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+  patch:
+   summary: Update provider office details
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: updateProviderFirmOffice
+   tags:
+    - Provider Firm Offices
+   description: |
+    Updating provider office details endpoint is used for the following use cases:
+    1) Deactivating office details by setting `activeDateTo`
+    2) Holding payments using `paymentHeldFlag`=`Y` and `paymentHeldReason`=`ABC`
+    3) Updating office details
+    4) Setting `intervened` flag
+    5) Assigning different bank details using `bankAccountDetailsGUID`
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+    - $ref: '#/components/parameters/OfficeGUIDorCode'
+   requestBody:
+    required: true
+    content:
+     application/json:
+      schema:
+       $ref: '#/components/schemas/OfficePatchV2'
+   responses:
+    '200':
+     description: Provider details retrieved successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           providerFirmGUID:
+            type: string
+            description: Unique identifier of the created provider
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+
+ /provider-firms/{providerFirmGUIDorFirmId}/offices/{officeGUIDorCode}/liaison-managers:
+  post:
+   summary: Create a liaison manager for office. Creating new manager end-dates all other managers.
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: createProviderFirmOfficeLiaisonManager
+   tags:
+    - Provider Firm Offices Liaison Managers
+   description: |
+    Create new liaison manager for an office.
+    `TODO: rules for setting creating a manager at the head office level`
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+    - $ref: '#/components/parameters/OfficeGUIDorCode'
+   requestBody:
+    required: true
+    content:
+     application/json:
+      schema:
+       $ref: '#/components/schemas/LiaisonManagerCreateV2'
+   responses:
+    '201':
+     description: Office created successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           providerFirmGUID:
+            type: string
+            description: Unique identifier of the created provider
+           officeGUID:
+            type: string
+            description: Unique identifier of the created office
+           liaisonManagerGUID:
+            type: string
+            description: Unique identifier of the created liaison manager
+
+    '400':
+     description: Invalid input
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/400Response'
+
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
+
+  get:
+   summary: Retrieve liaison managers for a given office office
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: getProviderFirmOfficeLiaisonManagers
+   tags:
+    - Provider Firm Offices Liaison Managers
+   description: |
+    Retrieve provider office liaison managers.
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+    - $ref: '#/components/parameters/OfficeGUIDorCode'
+   responses:
+    '200':
+     description: Provider details retrieved successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           content:
             type: array
             items:
-              type: string
-          description: Filter by parent firm GUID (multi)
-        - $ref: '#/components/parameters/QPageNumber'
-        - $ref: '#/components/parameters/QPageSize'
-      responses:
-        '200':
-          description: List of providers matching the filters
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      content:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/ProviderV2'
-                      metadata:
-                        $ref: '#/components/schemas/PaginatedSearchV2'
-                      links:
-                        $ref: "#/components/schemas/LinksV2"
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Response'
+             $ref: '#/components/schemas/LiaisonManagerV2'
+           metadata:
+            $ref: '#/components/schemas/PaginatedSearchV2'
+           links:
+            $ref: "#/components/schemas/LinksV2"
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
 
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-
-  /provider-firms/{providerFirmGUID}:
-    get:
-      summary: Retrieve provider details by GUID
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: getProviderFirmByGUID
-      tags:
-        - Provider Firms
-      description: |
-        Retrieve basic provider details. Use sub resources to retrieve other information.
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
+ /provider-firms/{providerFirmGUIDorFirmId}/offices/{officeGUIDorCode}/contract-managers:
+  post:
+   summary: Assign a liaison manager for office. Assigning a new manager end-dates all other managers.
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: createProviderFirmOfficeContractManager
+   tags:
+    - Provider Firm Offices Contract Managers
+   description: |
+    Assigning a new contract manager for an office.
+    `TODO: rules for setting creating a manager at the head office level`
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+    - $ref: '#/components/parameters/OfficeGUIDorCode'
+   requestBody:
+    required: true
+    content:
+     application/json:
+      schema:
+       $ref: '#/components/schemas/OfficeContractManagerCreateV2'
+   responses:
+    '201':
+     description: Office created successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           providerFirmGUID:
             type: string
-          description: Unique identifier of the provider
-      responses:
-        '200':
-          description: Provider details retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/ProviderV2'
-
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-        '404':
-          description: Provider not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Response'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-    patch:
-      summary: Update provider details
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: updateProviderFirm
-      tags:
-        - Provider Firms
-      description: |
-        Updating provider details endpoint is used for the following use cases: 
-        1) Updating company name
-        2) Updating legal service provider basic details
-        3) Updating Barrister or Advocate basic details
-        4) Deactivating provider firm by setting `activeDateTo`
-        5) Setting `intervened` flag
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
+            description: Unique identifier of the created provider
+           officeGUID:
             type: string
-          description: Unique identifier of the provider
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProviderPatchV2'
-      responses:
-        '200':
-          description: Provider details retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      providerFirmGUID:
-                        type: string
-                        description: Unique identifier of the created provider
-
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-
-        '404':
-          description: Provider not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Response'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-
-  /provider-firms/{providerFirmGUID}/bank-details:
-    post:
-      summary: Create bank account details for a provider firm
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: createProviderFirmBankAccount
-      tags:
-        - Provider Firm Bank Accounts
-      description: |
-        Create new bank account details used by given provider firm.
-        Setting `primary`=`true` results in `TODO: ?????`
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
+            description: Unique identifier of the created office
+           liaisonManagerGUID:
             type: string
-          description: Unique identifier of the provider
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BankAccountCreateV2'
-      responses:
-        '201':
-          description: Bank account created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      providerFirmGUID:
-                        type: string
-                        description: Unique identifier of the created provider
-                      bankAccountDetailGUID:
-                        type: string
-                        description: Unique identifier of the created bank detail
+            description: Unique identifier of the created liaison manager
 
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Response'
+    '400':
+     description: Invalid input
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/400Response'
 
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
 
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
 
-    get:
-      summary: Retrieve a list of provider bank accounts with optional filters
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: getProviderFirmBankAccounts
-      tags:
-        - Provider Firm Bank Accounts
-      description: |
-        Retrieve bank account details for a given provider. This list may be be used to get 
-        `guid`s that can be used in the office PATCH operation to set alternative bank account details.
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-        - $ref: '#/components/parameters/QPageNumber'
-        - $ref: '#/components/parameters/QPageSize'
-      responses:
-        '200':
-          description: List of providers matching the filters
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      content:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/BankAccountV2'
-                      metadata:
-                        $ref: '#/components/schemas/PaginatedSearchV2'
-                      links:
-                        $ref: "#/components/schemas/LinksV2"
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Response'
-
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-
-        '404':
-          description: Provider not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Response'
-
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-
-  /provider-firms/{providerFirmGUID}/bank-details/{bankAccountDetailGUID}:
-    get:
-      summary: Retrieve provider bank details by GUID
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: getProviderFirmBankAccountByGUID
-      tags:
-        - Provider Firm Bank Accounts
-      description: |
-        Retrieve provider bank account details.
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-        - name: bankAccountDetailGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the bank detail
-      responses:
-        '200':
-          description: Provider details retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/BankAccountV2'
-
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-
-        '404':
-          description: Provider not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Response'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-    patch:
-      summary: Update provider bank details
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: updateProviderFirmBankAccount
-      tags:
-        - Provider Firm Bank Accounts
-      description: |
-        Updating provider bank details endpoint is used for the following use cases:
-        1) Deactivating bank details by setting `activeDateTo`
-        2) Nominating bank detail as primary using `primary`=`true`
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-        - name: bankAccountDetailGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the bank detail
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BankAccountPatchV2'
-      responses:
-        '200':
-          description: Provider details retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      providerFirmGUID:
-                        type: string
-                        description: Unique identifier of the created provider
-
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-
-        '404':
-          description: Provider not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Response'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-
-  /provider-firms/{providerFirmGUID}/offices:
-    post:
-      summary: Create an office for a provider firm
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: createProviderFirmOffice
-      tags:
-        - Provider Firm Offices
-      description: |
-        Create new office details used by given provider firm.
-        Setting `primary`=`true` results in `TODO: ?????`
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OfficeCreateV2'
-      responses:
-        '201':
-          description: Office created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      providerFirmGUID:
-                        type: string
-                        description: Unique identifier of the created provider
-                      officeGUID:
-                        type: string
-                        description: Unique identifier of the created office
-
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Response'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-        '404':
-          description: Provider not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Response'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-
-    get:
-      summary: Retrieve a list of provider offices with optional filters
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: getProviderFirmOffices
-      tags:
-        - Provider Firm Offices
-      description: |
-        Retrieve office details for a given provider. Use this endpoint when you have `providerFirmGUID`.
-        When you do not have `providerFirmGUID` - use `/provider-firms-offices?officeGUID=12345&allProviderOffices=true`
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-        - $ref: '#/components/parameters/QPageNumber'
-        - $ref: '#/components/parameters/QPageSize'
-      responses:
-        '200':
-          description: List of providers matching the filters
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      content:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/OfficeV2'
-                      metadata:
-                        $ref: '#/components/schemas/PaginatedSearchV2'
-                      links:
-                        $ref: "#/components/schemas/LinksV2"
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Response'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-
-  /provider-firms-offices:
-
-    get:
-      summary: Retrieve a list of provider offices with optional filters
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: getOffices
-      tags:
-        - Provider Firm Offices
-      description: |
-        Retrieve office details when you do not have `providerFirmGUID`. Covers the following use cases:
-        1) Browse all active offices
-        2) Browse all offices of a specific provider using one known `officeGUID`.
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: officeGUID
-          in: query
-          required: false
-          schema:
+  get:
+   summary: Retrieve contract managers for a given office office
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: getProviderFirmOfficeContractManagers
+   tags:
+    - Provider Firm Offices Contract Managers
+   description: |
+    Retrieve provider office contract managers.
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+    - $ref: '#/components/parameters/OfficeGUIDorCode'
+   responses:
+    '200':
+     description: Provider details retrieved successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           content:
             type: array
             items:
-              type: string
-          description: Filter by provider firm GUID (multi)
-        - name: allProviderOffices
-          in: query
-          schema:
-            type: boolean
-          description: use this filter in conjunction with `officeGUID` to get all offices for the provider that the office with specified guid belongs to
-        - $ref: '#/components/parameters/QPageNumber'
-        - $ref: '#/components/parameters/QPageSize'
-      responses:
-        '200':
-          description: List of providers matching the filters
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      content:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/OfficeV2'
-                      metadata:
-                        $ref: '#/components/schemas/PaginatedSearchV2'
-                      links:
-                        $ref: "#/components/schemas/LinksV2"
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Response'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
+             $ref: '#/components/schemas/OfficeContractManagerV2'
+           metadata:
+            $ref: '#/components/schemas/PaginatedSearchV2'
+           links:
+            $ref: "#/components/schemas/LinksV2"
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
 
-  /provider-firms/{providerFirmGUID}/offices/{officeGUID}:
-    get:
-      summary: Retrieve provider office details by GUID
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: getProviderFirmOfficeByGUID
-      tags:
-        - Provider Firm Offices
-      description: |
-        Retrieve provider office details.
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-        - name: officeGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the office
-      responses:
-        '200':
-          description: Provider details retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/OfficeV2'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-        '404':
-          description: Provider not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Response'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-    patch:
-      summary: Update provider office details
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: updateProviderFirmOffice
-      tags:
-        - Provider Firm Offices
-      description: |
-        Updating provider office details endpoint is used for the following use cases:
-        1) Deactivating office details by setting `activeDateTo`
-        2) Holding payments using `paymentHeldFlag`=`Y` and `paymentHeldReason`=`ABC`
-        3) Updating office details
-        4) Setting `intervened` flag
-        5) Assigning different bank details using `bankAccountDetailsGUID`
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-        - name: bankAccountDetailGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the bank detail
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OfficePatchV2'
-      responses:
-        '200':
-          description: Provider details retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      providerFirmGUID:
-                        type: string
-                        description: Unique identifier of the created provider
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-        '404':
-          description: Provider not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Response'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
+ /provider-firms/{providerFirmGUIDorFirmId}/practitioners:
 
-  /provider-firms/{providerFirmGUID}/offices/{officeGUID}/liaison-managers:
-    post:
-      summary: Create a liaison manager for office. Creating new manager end-dates all other managers.
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: createProviderFirmOfficeLiaisonManager
-      tags:
-        - Provider Firm Offices Liaison Managers
-      description: |
-        Create new liaison manager for an office.
-        `TODO: rules for setting creating a manager at the head office level`
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-        - name: officeGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the office
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LiaisonManagerCreateV2'
-      responses:
-        '201':
-          description: Office created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      providerFirmGUID:
-                        type: string
-                        description: Unique identifier of the created provider
-                      officeGUID:
-                        type: string
-                        description: Unique identifier of the created office
-                      liaisonManagerGUID:
-                        type: string
-                        description: Unique identifier of the created liaison manager
-
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Response'
-
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-
-    get:
-      summary: Retrieve liaison managers for a given office office
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: getProviderFirmOfficeLiaisonManagers
-      tags:
-        - Provider Firm Offices Liaison Managers
-      description: |
-        Retrieve provider office liaison managers.
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-        - name: officeGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the office
-      responses:
-        '200':
-          description: Provider details retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      content:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/LiaisonManagerV2'
-                      metadata:
-                        $ref: '#/components/schemas/PaginatedSearchV2'
-                      links:
-                        $ref: "#/components/schemas/LinksV2"
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-        '404':
-          description: Provider not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Response'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-
-  /provider-firms/{providerFirmGUID}/offices/{officeGUID}/contract-managers:
-    post:
-      summary: Assign a liaison manager for office. Assigning a new manager end-dates all other managers.
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: createProviderFirmOfficeContractManager
-      tags:
-        - Provider Firm Offices Contract Managers
-      description: |
-        Assigning a new contract manager for an office.
-        `TODO: rules for setting creating a manager at the head office level`
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-        - name: officeGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the office
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OfficeContractManagerCreateV2'
-      responses:
-        '201':
-          description: Office created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      providerFirmGUID:
-                        type: string
-                        description: Unique identifier of the created provider
-                      officeGUID:
-                        type: string
-                        description: Unique identifier of the created office
-                      liaisonManagerGUID:
-                        type: string
-                        description: Unique identifier of the created liaison manager
-
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Response'
-
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-
-    get:
-      summary: Retrieve contract managers for a given office office
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: getProviderFirmOfficeContractManagers
-      tags:
-        - Provider Firm Offices Contract Managers
-      description: |
-        Retrieve provider office contract managers.
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-        - name: officeGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the office
-      responses:
-        '200':
-          description: Provider details retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      content:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/OfficeContractManagerV2'
-                      metadata:
-                        $ref: '#/components/schemas/PaginatedSearchV2'
-                      links:
-                        $ref: "#/components/schemas/LinksV2"
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-        '404':
-          description: Provider not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Response'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-
-  /provider-firms/{providerFirmGUID}/offices/{officeGUID}/practitioners:
-    post:
-      summary: Assign a practitioner (Barrister or Advocate) for office of a Chamber.
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: createProviderFirmOfficePractitioner
-      tags:
-        - Chamber Office Practitioners
-      description: |
-        Assigning a practitioner to a chamber office. Note that to create new practitioner you need to create new provider firm of type `Barrister` or `Advocate`.
-        Use the GET `/provider-firms?type=Barrister` or `/provider-firms?type=Advocate` to see available `guid`s
-        `TODO: how to remove?`
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-        - name: officeGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the office
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OfficePractitionerCreateV2'
-      responses:
-        '201':
-          description: Office created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      providerFirmGUID:
-                        type: string
-                        description: Unique identifier of the created provider
-                      officeGUID:
-                        type: string
-                        description: Unique identifier of the created office
-                      practitionerGUID:
-                        type: string
-                        description: Unique identifier of the created liaison manager
-
-        '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/400Response'
-
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
-
-    get:
-      summary: Retrieve practitioners for a given chamber office
-      security:
-        - bearerAuth: [ ]
-        - AzureAD:
-            - api://<client-id>/access_as_user
-      operationId: getProviderFirmOfficePractitioners
-      tags:
-        - Chamber Office Practitioners
-      description: |
-        Retrieve chamber office practitioners.
-      parameters:
-        - $ref: '#/components/parameters/XCorrelationId'
-        - $ref: '#/components/parameters/TraceParentHeader'
-        - name: providerFirmGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the provider
-        - name: officeGUID
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the office
-      responses:
-        '200':
-          description: Provider details retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      content:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/OfficePractitionerV2'
-                      metadata:
-                        $ref: '#/components/schemas/PaginatedSearchV2'
-                      links:
-                        $ref: "#/components/schemas/LinksV2"
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/403Response'
-        '404':
-          description: Provider not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/404Response'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/500Response'
+  get:
+   summary: Retrieve practitioners for a given chamber office
+   security:
+    - bearerAuth: [ ]
+    - AzureAD:
+       - api://<client-id>/access_as_user
+   operationId: getProviderFirmOfficePractitioners
+   tags:
+    - Chamber Office Practitioners
+   description: |
+    Retrieve chamber office practitioners.
+    Note that to create new practitioner you need to create new provider firm of type `Barrister` or `Advocate`.
+    Use the GET `/provider-firms?type=Barrister` or `/provider-firms?type=Advocate` to see available `guid`s
+    then use PATCH `/provider-firms?providerFirmGUIDorFirmId=ABC` and set the `practitionerDetails.chamberGUID`
+    or `practitionerDetails.chamberFirmId`.
+    `TODO: how to remove?`
+   parameters:
+    - $ref: '#/components/parameters/XCorrelationId'
+    - $ref: '#/components/parameters/TraceParentHeader'
+    - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+   responses:
+    '200':
+     description: Provider details retrieved successfully
+     content:
+      application/json:
+       schema:
+        type: object
+        properties:
+         data:
+          type: object
+          properties:
+           content:
+            type: array
+            items:
+             $ref: '#/components/schemas/OfficePractitionerV2'
+           metadata:
+            $ref: '#/components/schemas/PaginatedSearchV2'
+           links:
+            $ref: "#/components/schemas/LinksV2"
+    '403':
+     description: Forbidden
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/403Response'
+    '404':
+     description: Provider not found
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/404Response'
+    '500':
+     description: Server error
+     content:
+      application/json:
+       schema:
+        $ref: '#/components/schemas/500Response'
 
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+ securitySchemes:
+  bearerAuth:
+   type: http
+   scheme: bearer
+   bearerFormat: JWT
 
-    AzureAD:
-      type: oauth2
-      flows:
-        authorizationCode:
-          authorizationUrl: https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/authorize
-          tokenUrl: https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token
-          scopes:
-            api://<client-id>/access_as_user: Access the API as an authenticated user
-
-
-  schemas:
-
-    BaseEntityGUIDV2:
-      type: string
-      format: guid
-      description: 'GUID is the primary key for entity'
-      example: 'ABCD-DEFG-1234-5678'
-
-    BaseEntityV2:
-      type: object
-      properties:
-        guid:
-          $ref: '#/components/schemas/BaseEntityGUIDV2'
+  AzureAD:
+   type: oauth2
+   flows:
+    authorizationCode:
+     authorizationUrl: https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/authorize
+     tokenUrl: https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token
+     scopes:
+      api://<client-id>/access_as_user: Access the API as an authenticated user
 
 
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            errorCode:
-              type: string
-              example: 'P00XX'
+ schemas:
 
-    400Response:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            errorCode:
-              type: string
-              example: 'P00XX'
+  BaseEntityGUIDV2:
+   type: string
+   format: guid
+   description: 'GUID is the primary key for entity'
+   example: 'ABCD-DEFG-1234-5678'
 
-    403Response:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            errorCode:
-              type: string
-              example: 'P00XX'
-
-    404Response:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            errorCode:
-              type: string
-              example: 'P00NF'
-
-    500Response:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            errorCode:
-              type: string
-              example: 'P00SE'
+  BaseEntityV2:
+   type: object
+   properties:
+    guid:
+     $ref: '#/components/schemas/BaseEntityGUIDV2'
+    version:
+     type: number
+     description: 'Record version (for audit and event concurrency)'
+     example: '12'
+    createdBy:
+     type: string
+     description: 'User ID from the auth token which resulted in creating this record'
+     example: 'john.smith.42'
+    createdTimestamp:
+     type: string
+     format: date-time
+     example: '2025-09-25T09:30:00Z'
+    lastUpdatedBy:
+     type: string
+     description: 'User ID from the auth token which resulted in updating this record last'
+     example: 'john.doe.24'
+    lastUpdatedTimestamp:
+     type: string
+     format: date-time
+     example: '2025-09-26T12:30:00Z'
 
 
+  ErrorResponse:
+   type: object
+   properties:
+    error:
+     type: object
+     properties:
+      errorCode:
+       type: string
+       example: 'P00XX'
 
-    ProviderFirmTypeV2:
-      type: string
-      enum:
-        - Legal Services Provider
-        - Chambers
-        - Advocate
-        - Barrister
+  400Response:
+   type: object
+   properties:
+    error:
+     type: object
+     properties:
+      errorCode:
+       type: string
+       example: 'P00XX'
 
-    ProviderCreateV2:
-      type: object
+  403Response:
+   type: object
+   properties:
+    error:
+     type: object
+     properties:
+      errorCode:
+       type: string
+       example: 'P00XX'
+
+  404Response:
+   type: object
+   properties:
+    error:
+     type: object
+     properties:
+      errorCode:
+       type: string
+       example: 'P00NF'
+
+  500Response:
+   type: object
+   properties:
+    error:
+     type: object
+     properties:
+      errorCode:
+       type: string
+       example: 'P00SE'
+
+
+
+  ProviderFirmTypeV2:
+   type: string
+   enum:
+    - Legal Services Provider
+    - Chambers
+    - Advocate
+    - Barrister
+
+  ProviderCreateV2:
+   type: object
+   required:
+    - type
+    - name
+   properties:
+    type:
+     allOf:
+      - $ref: '#/components/schemas/ProviderFirmTypeV2'
+     description: 'Type of the provider firm. CWA ref: PO_VENDORS.ATTRIBUTE4. `TODO: check the enum values`'
+    name:
+     type: string
+     description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
+    activeDateTo:
+     type: string
+     format: date
+     description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE. `TODO: check if this should be synced with head office available to date or if this is separate function`'
+    legalServicesProviderDetails:
+     allOf:
+      - $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
+     description: 'Applicable only for type=Legal Services Provider'
+    practitionerDetails:
+     allOf:
+      - $ref: '#/components/schemas/PractitionerDetailsV2'
+     description: 'Applicable only for type=Barrister / Advocate'
+    headOffice:
+     allOf:
+      - $ref: '#/components/schemas/OfficeCreateV2'
+
+  ProviderV2:
+   allOf:
+    - $ref: '#/components/schemas/BaseEntityV2'
+    - type: object
       required:
-        - type
-        - name
+       - providerFirmId
+       - type
+       - name
       properties:
-        type:
-          allOf:
-            - $ref: '#/components/schemas/ProviderFirmTypeV2'
-          description: 'Type of the provider firm. CWA ref: PO_VENDORS.ATTRIBUTE4. TODO: check the enum values'
-        name:
-          type: string
-          description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
-        parentFirm:
-          $ref: '#/components/schemas/BaseEntityGUIDV2'
-        activeDateTo:
-          type: string
-          format: date
-          description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE. TODO: check if this should be synced with head office available to date or if this is separate function'
-        legalServicesProviderDetails:
-          allOf:
-            - $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
-          description: 'Applicable only for type=Legal Services Provider'
-        practitionerDetails:
-          allOf:
-            - $ref: '#/components/schemas/PractitionerDetailsV2'
-          description: 'Applicable only for type=Barrister / Advocate'
-        headOffice:
-          allOf:
-            - $ref: '#/components/schemas/OfficeCreateV2'
-
-    ProviderV2:
-      allOf:
-        - $ref: '#/components/schemas/BaseEntityV2'
-        - type: object
-          required:
-            - providerFirmId
-            - type
-            - name
-          properties:
-            providerFirmId:
-              type: string
-              description: 'Unique provider firm identifier'
-              example: 'TODO: provide example'
-            type:
-              allOf:
-                - $ref: '#/components/schemas/ProviderFirmTypeV2'
-              description: 'Type of the provider firm. CWA ref: PO_VENDORS.ATTRIBUTE4'
-            name:
-              type: string
-              description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
-              example: 'Legal Services Co.'
-            activeDateTo:
-              type: string
-              format: date
-              description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE'
-            intervenedDetails:
-              allOf:
-                - $ref: '#/components/schemas/IntervenedProviderDetailsV2'
-            legalServicesProviderDetails:
-              allOf:
-                - $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
-              description: 'Applicable only for type=Legal Services Provider'
-            practitionerDetails:
-              allOf:
-                - $ref: '#/components/schemas/PractitionerDetailsV2'
-              description: 'Applicable only for type=Barrister / Advocate'
-            headOffice:
-              allOf:
-                - $ref: '#/components/schemas/HeadOfficeDetailsV2'
-
-    ProviderPatchV2:
-      type: object
-      properties:
-        name:
-          type: string
-          description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
-        activeDateTo:
-          type: string
-          format: date
-          description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE'
-        intervenedDetails:
-          allOf:
-            - $ref: '#/components/schemas/IntervenedProviderDetailsV2'
-        legalServicesProviderDetails:
-          allOf:
-            - $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
-          description: 'Applicable only for type=Legal Services Provider'
-        practitionerDetails:
-          allOf:
-            - $ref: '#/components/schemas/PractitionerDetailsV2'
-          description: 'Applicable only for type=Barrister / Advocate'
-        headOffice:
-          allOf:
-            - $ref: '#/components/schemas/HeadOfficeDetailsPatchV2'
-
-    LegalServicesProviderDetailsV2:
-      type: object
-      required:
-        - constitutionalStatus
-      properties:
-        constitutionalStatus:
-          type: string
-          enum:
-            - Partnership
-            - Limited company
-            - Sole practitioner
-            - Limited Liability Partnership (LLP)
-            - Charity
-            - Government funded organisation
-          description: 'CWA ref: PO_VENDORS.ATTRIBUTE1. TODO: check the enum values'
-        indemnityReceivedDate:
-          type: string
-          format: date
-          description: 'CWA ref: PO_VENDORS.ATTRIBUTE2. TODO: Need better description of this field'
-        companiesHouseNumber:
-          type: string
-          description: 'CWA ref: PO_VENDORS.ATTRIBUTE11. TODO: Need better description of this field'
-          example: 'TODO: provide example'
-
-    PractitionerDetailsV2:
-      type: object
-      required:
-        - name
-        - level
-        - rollNumber
-      properties:
-        name:
-          type: string
-          description: 'Barrister or Advocate name. CWA ref: PO_VENDOR_SITES_ALL.VENDOR_SITE_CODE_ALT. TODO: Need better description of this field'
-          example: 'John Smith'
-        level:
-          type: string
-          enum:
-           - Pupil
-           - Junior
-           - KC
-          description: 'Barrister or Advocate level. CWA ref: PO_VENDORS.ATTRIBUTE10. TODO: Need better description of this field, any business rules?'
-        rollNumber:
-          type: string
-          description: 'Bar Council or Solicitors Regulation Authority roll number. CWA ref: PO_VENDORS.ATTRIBUTE11. TODO: Need better description of this field, any business rules?'
-          example: 'TODO: provide example'
-
-    OfficeCreateV2:
-      type: object
-      required:
-        - address
-      properties:
-        address:
-          $ref: '#/components/schemas/AddressV2'
-        telephoneNumber:
-          $ref: '#/components/schemas/PhoneV2'
-        emailAddress:
-          type: string
-          format: email
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.EMAIL_ADDRESS'
-        dxDetails:
-          $ref: '#/components/schemas/DXV2'
-        vatRegistration:
-          $ref: '#/components/schemas/VATRegistrationV2'
-        paymentDetails:
-          $ref: '#/components/schemas/PaymentDetailsCreateV2'
-        liaisonManager:
-            $ref: '#/components/schemas/LiaisonManagerCreateV2'
-        contractManager:
-          $ref: '#/components/schemas/OfficeContractManagerCreateV2'
-
-    OfficeV2:
-      allOf:
-        - $ref: '#/components/schemas/BaseEntityV2'
-        - type: object
-          required:
-            - officeId
-            - officeAccountNumber
-            - address
-          properties:
-            officeId:
-              type: string
-              description: 'CWA ref: ???'
-              example: 'TODO: provide example'
-            officeAccountNumber:
-              type: string
-              description: 'CWA ref: ???'
-              example: 'TODO: provide example'
-            activeDateTo:
-              type: string
-              format: date
-              description: 'End date of activity. CWA ref: PO_VENDOR_SITES_ALL.INACTIVE_DATE'
-            intervenedDetails:
-              $ref: '#/components/schemas/IntervenedOfficeDetailsV2'
-            address:
-              $ref: '#/components/schemas/AddressV2'
-            telephoneNumber:
-              $ref: '#/components/schemas/PhoneV2'
-            emailAddress:
-              type: string
-              format: email
-              description: 'CWA ref: PO_VENDOR_SITES_ALL.EMAIL_ADDRESS'
-            dxDetails:
-              $ref: '#/components/schemas/DXV2'
-            vatRegistration:
-              $ref: '#/components/schemas/VATRegistrationV2'
-            paymentDetails:
-              $ref: '#/components/schemas/PaymentDetailsV2'
-
-    OfficePatchV2:
-      type: object
-      properties:
-        activeDateTo:
-          type: string
-          format: date
-          description: 'End date of activity. CWA ref: PO_VENDOR_SITES_ALL.INACTIVE_DATE'
-        intervenedDetails:
-          $ref: '#/components/schemas/IntervenedOfficeDetailsV2'
-        address:
-          $ref: '#/components/schemas/AddressV2'
-        telephoneNumber:
-          $ref: '#/components/schemas/PhoneV2'
-        emailAddress:
-          type: string
-          format: email
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.EMAIL_ADDRESS'
-        dxDetails:
-          $ref: '#/components/schemas/DXV2'
-        vatRegistration:
-          $ref: '#/components/schemas/VATRegistrationV2'
-        paymentDetails:
-          $ref: '#/components/schemas/PaymentDetailsV2'
-
-    HeadOfficeDetailsV2:
-      type: object
-      required:
-        - officeId
-        - officeAccountNumber
-      properties:
-        officeGUID:
-          type: string
-          description: 'CWA ref: N/A'
-          example: 'ABCD-DEFG-1234-5678'
-        officeId:
-          type: string
-          description: 'CWA ref: ????'
-          example: 'TODO: provide example'
-        officeAccountNumber:
-          type: string
-          description: 'CWA ref: ????'
-          example: 'TODO: provide example'
-
-    HeadOfficeDetailsPatchV2:
-      type: object
-      required:
-        - officeId
-        - officeAccountNumber
-      properties:
-        officeGUID:
-          type: string
-          description: 'CWA ref: N/A'
-          example: 'ABCD-DEFG-1234-5678'
-
-    IntervenedProviderDetailsV2:
-      type: object
-      required:
-        - intervenedFlag
-        - intervenedChangeDate
-      properties:
-        intervenedFlag:
-          type: string
-          enum:
-            - Y
-            - N
-          description: 'CWA ref: PO_VENDORS.ATTRIBUTE13. TODO: Need better description of this field, any business rules? check if this should be synced with head office data or if this is separate function'
-        intervenedChangeDate:
-          type: string
-          format: date
-          description: 'CWA ref: PO_VENDORS.ATTRIBUTE15. TODO: Need better description of this field, any business rules? check if this should be synced with head office data or if this is separate function'
-
-
-    IntervenedOfficeDetailsV2:
-      type: object
-      required:
-        - intervenedFlag
-        - intervenedChangeDate
-      properties:
-        intervenedFlag:
-          type: string
-          enum:
-            - Y
-            - N
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.ATTRIBUTE11. TODO: Need better description of this field, any business rules?'
-        intervenedChangeDate:
-          type: string
-          format: date
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.ATTRIBUTE12. TODO: Need better description of this field, any business rules?'
-
-
-    AddressV2:
-      type: object
-      required:
-        - line1
-        - townOrCity
-        - postcode
-      properties:
-        line1:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE1. TODO: find out what address info is stored in this attribute'
-          example: 'TODO: provide example'
-        line2:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE2. TODO: find out what address info is stored in this attribute'
-          example: 'TODO: provide example'
-        line3:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE3. TODO: find out what address info is stored in this attribute'
-          example: 'TODO: provide example'
-        line4:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE4. TODO: find out what address info is stored in this attribute'
-          example: 'TODO: provide example'
-        townOrCity:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.CITY. TODO: any business rules for verifying data?'
-          example: 'TODO: provide example'
-        county:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.COUNTY. TODO: any business rules for verifying data?'
-          example: 'TODO: provide example'
-        postcode:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.ZIP. TODO: any business rules for verifying data?'
-          example: 'TODO: provide example'
-
-    PhoneV2:
-      type: object
-      required:
-        - area
-        - phone
-      properties:
-        area:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.AREA_CODE. TODO: any business rules for verifying data? do we need it as a separate field?'
-        phone:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.PHONE. TODO: any business rules for verifying data? do we need it as a separate field?'
-    DXV2:
-      type: object
-      required:
-        - dxNumber
-        - dxCentre
-      properties:
-        dxNumber:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.ATTRIBUTE6. TODO: need better description of this field'
-        dxCentre:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.ATTRIBUTE7. TODO: need better description of this field'
-
-    VATRegistrationV2:
-      type: object
-      required:
-        - vatNumber
-      properties:
-        vatNumber:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.VAT_REGISTRATION_NUM'
-
-    PaymentDetailsCreateV2:
-      type: object
-      required:
-        - paymentMethod
-      properties:
-        paymentMethod:
-          type: string
-          enum:
-            - Cheque
-            - Electronic
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.EDI_PAYMENT_METHOD. TODO: check the enum values. Any business rules?'
-        bankAccountDetails:
-         $ref: '#/components/schemas/BankAccountCreateV2'
-        description: 'Bank details do not apply if paymentMethod=Cheque'
-
-    PaymentDetailsV2:
-      type: object
-      required:
-        - paymentMethod
-      properties:
-        paymentMethod:
-          type: string
-          enum:
-            - Cheque
-            - Electronic
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.EDI_PAYMENT_METHOD. TODO: check the enum values. Any business rules?'
-        paymentHeldFlag:
-          type: string
-          enum:
-            - Y
-            - N
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.HOLD_ALL_PAYMENTS_FLAG. TODO: check the enum values. Any business rules?'
-        paymentHeldReason:
-          type: string
-          description: 'CWA ref: PO_VENDOR_SITES_ALL.HOLD_REASON. TODO: check if this is mandatory when paymentHeldFlag=Y'
-        bankAccountDetailsGUID:
-          type: string
-          description: 'CWA ref: N/A'
-
-
-    BankAccountCreateV2:
-      type: object
-      required:
-        - accountName
-        - sortCode
-        - accountNumber
-        - activeDateFrom
-        - primary
-      properties:
-        accountName:
-          type: string
-          description: 'CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NAME'
-        sortCode:
-          type: string
-          description: 'CWA ref: AP_BANK_BRANCHES.BANK_NUM'
-        accountNumber:
-          type: string
-          description: 'CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NUM'
-        activeDateFrom:
-          type: string
-          format: date
-          description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.START_DATE'
-        activeDateTo:
-          type: string
-          format: date
-          description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.END_DATE'
-        primary:
-          type: boolean
-          description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.PRIMARY_FLAG. TODO: should we keep this flag in local? or should it be like the head office a property on the provider firm? What happens when this flag is set when creating an additional office?'
-
-
-    BankAccountV2:
-      allOf:
-        - $ref: '#/components/schemas/BaseEntityV2'
-        - type: object
-          required:
-            - accountName
-            - sortCode
-            - accountNumber
-            - activeDateFrom
-            - primary
-          properties:
-            accountName:
-              type: string
-              description: 'CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NAME'
-            sortCode:
-              type: string
-              description: 'CWA ref: AP_BANK_BRANCHES.BANK_NUM'
-            accountNumber:
-              type: string
-              description: 'CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NUM'
-            activeDateFrom:
-              type: string
-              format: date
-              description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.START_DATE'
-            activeDateTo:
-              type: string
-              format: date
-              description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.END_DATE'
-            primary:
-              type: boolean
-              description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.PRIMARY_FLAG. TODO: should we keep this flag in local? or should it be like the head office a property on the provider firm?'
-
-
-    BankAccountPatchV2:
-      type: object
-      properties:
-        activeDateTo:
-          type: string
-          format: date
-          description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.END_DATE'
-        primary:
-          type: boolean
-          description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.PRIMARY_FLAG. TODO: should we keep this flag in local? or should it be like the head office a property on the provider firm?'
-
-    OfficeBankAccountPatchV2:
-      type: object
-      properties:
-        bankAccountDetailGUID:
-          $ref: '#/components/schemas/BaseEntityGUIDV2'
-
-    LiaisonManagerCreateV2:
-      type: object
-      required:
-        - firstName
-        - lastName
-        - emailAddress
-        - telephoneNumber
-        - activeDateFrom
-      properties:
-        firstName:
-          type: string
-          description: 'CWA ref: PO_VENDOR_CONTACTS.FIRST_NAME'
-        lastName:
-          type: string
-          description: 'CWA ref: PO_VENDOR_CONTACTS.LAST_NAME'
-        emailAddress:
-          type: string
-          format: email
-          description: 'CWA ref: PO_VENDOR_CONTACTS.EMAIL_ADDRESS'
-        telephoneNumber:
-          $ref: '#/components/schemas/PhoneV2'
-        website:
-          type: string
-          format: uri
-          description: 'CWA ref: PO_VENDOR_CONTACTS.URL'
-        activeDateFrom:
-          type: string
-          format: date
-          description: 'CWA ref: PO_VENDOR_CONTACTS.CREATION_DATE'
-        activeDateTo:
-          type: string
-          format: date
-          description: 'CWA ref: PO_VENDOR_CONTACTS.INACTIVE_DATE'
-
-    LiaisonManagerV2:
-      allOf:
-        - $ref: '#/components/schemas/BaseEntityV2'
-        - type: object
-          required:
-            - firstName
-            - lastName
-            - emailAddress
-            - telephoneNumber
-            - activeDateFrom
-          properties:
-            firstName:
-              type: string
-              description: 'CWA ref: PO_VENDOR_CONTACTS.FIRST_NAME'
-            lastName:
-              type: string
-              description: 'CWA ref: PO_VENDOR_CONTACTS.LAST_NAME'
-            emailAddress:
-              type: string
-              format: email
-              description: 'CWA ref: PO_VENDOR_CONTACTS.EMAIL_ADDRESS'
-            telephoneNumber:
-              $ref: '#/components/schemas/PhoneV2'
-            website:
-              type: string
-              format: uri
-              description: 'CWA ref: PO_VENDOR_CONTACTS.URL'
-            activeDateFrom:
-              type: string
-              format: date
-              description: 'CWA ref: PO_VENDOR_CONTACTS.CREATION_DATE'
-            activeDateTo:
-              type: string
-              format: date
-              description: 'CWA ref: PO_VENDOR_CONTACTS.INACTIVE_DATE'
-
-
-    OfficeLiaisonManagerPatchV2:
-      type: object
-      properties:
-        liaisonManagerGUID:
-          $ref: '#/components/schemas/BaseEntityGUIDV2'
-
-    OfficeContractManagerCreateV2:
-      type: object
-      properties:
-        contractManagerId:
-          type: string
-          example: 'TODO: provide example'
-          description: 'CWA ref: ???'
-
-    OfficePractitionerCreateV2:
-      type: object
-      properties:
-        providerFirmGUID:
-          $ref: '#/components/schemas/BaseEntityGUIDV2'
-
-    OfficePractitionerV2:
-      allOf:
-        - $ref: '#/components/schemas/BaseEntityV2'
-        - $ref: '#/components/schemas/PractitionerDetailsV2'
-        - type: object
-          properties:
-            type:
-              $ref: '#/components/schemas/ProviderFirmTypeV2'
-            activeDateTo:
-              type: string
-              format: date
-              description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE'
-
-    ContractManagerV2:
-      type: object
-      required:
-        - contractManagerId
-        - firstName
-        - lastName
-      properties:
-        contractManagerId:
-          type: string
-          example: 'TODO: provide example'
-          description: 'CWA ref: ???'
-        firstName:
-          type: string
-          example: 'John'
-          description: 'CWA ref: ???'
-        lastName:
-          type: string
-          example: 'Smith'
-          description: 'CWA ref: ???'
-        email:
-         type: string
-         format: email
-         example: 'john.smith@example.com'
-         description: 'CWA ref: ???'
-
-    OfficeContractManagerV2:
-      allOf:
-        - $ref: '#/components/schemas/BaseEntityV2'
-        - type: object
-          required:
-            - contractManagerId
-            - firstName
-            - lastName
-          properties:
-            contractManagerId:
-              type: string
-              example: 'TODO: provide example'
-              description: 'CWA ref: ???'
-            firstName:
-              type: string
-              example: 'John'
-              description: 'CWA ref: ???'
-            lastName:
-              type: string
-              example: 'Smith'
-              description: 'CWA ref: ???'
-            email:
-             type: string
-             format: email
-             example: 'john.smith@example.com'
-             description: 'CWA ref: ???'
-            activeDateTo:
-              type: string
-              format: date
-              description: 'CWA ref: ???'
-
-
-    PaginatedSearchV2:
-      type: object
-      required:
-        - searchCriteria
-        - pagination
-      properties:
-        searchCriteria:
-          $ref: '#/components/schemas/SearchCriteriaV2'
-        pagination:
-          $ref: '#/components/schemas/PaginationV2'
-        sort:
-          $ref: '#/components/schemas/SortV2'
-
-    SearchCriteriaV2:
-      type: object
-      properties:
-        criteria:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchCriterionV2'
-
-    SearchCriterionV2:
-      type: object
-      properties:
-        filter:
-          type: string
-          example: 'guid'
-          description: 'Filter key'
-        values:
-          type: array
-          items:
-            type: string
-            example: 'ABCD-EFGH-1234-5678'
-            description: 'Filter value(s) used for this search'
-
-    PaginationV2:
-      type: object
-      properties:
-        currentPage:
-          type: number
-          example: 2
-          description: 'Page index denoting the current page index for response, starting from 0'
-        pageSize:
-          type: number
-          example: 10
-          description: 'Page size used for this search'
-        totalPages:
-          type: number
-          example: 5
-          description: 'Total number of pages'
-        totalItems:
-          type: number
-          example: 123
-          description: 'Total number of records for given search request'
-
-    SortV2:
-      type: object
-      properties:
-        field:
-          type: string
-          example: "sortByOption"
-        direction:
-          type: string
-          enum: [ asc, desc ]
-          example: "asc"
-
-    LinksV2:
-      type: object
-      properties:
-        self:
-          type: string
-          example: "/example?page=2&pageSize=10"
-          format: uri
-        next:
-          type: string
-          example: "/example?page=3&pageSize=10"
-          format: uri
-        prev:
-          type: string
-          example: "/example?page=1&pageSize=10"
-          format: uri
-        first:
-          type: string
-          example: "/example?page=1&pageSize=10"
-          format: uri
-        last:
-          type: string
-          example: "/example?page=5&pageSize=10"
-          format: uri
-
-  parameters:
-    XCorrelationId:
-      name: x-correlation-id
-      in: header
-      required: false
-      schema:
+       providerFirmId:
         type: string
-      description: Correlation ID for tracing requests
-    TraceParentHeader:
-      name: transparent
-      in: header
-      required: false
-      schema:
+        description: 'Unique provider firm identifier. CWA ref: ???. `TODO: is this the same as account number? CWA ref, is it segment 1?`'
+        example: '`TODO: provide example`'
+       type:
+        allOf:
+         - $ref: '#/components/schemas/ProviderFirmTypeV2'
+        description: 'Type of the provider firm. CWA ref: PO_VENDORS.ATTRIBUTE4'
+       name:
         type: string
-        pattern: '^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$'
-      description: >
-        W3C Trace Context header used for distributed tracing.
-        Format: 00-<trace-id>-<span-id>-<trace-flags>.
-        Example: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-0
+        description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
+        example: 'Legal Services Co.'
+       activeDateTo:
+        type: string
+        format: date
+        description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE'
+       intervenedDetails:
+        allOf:
+         - $ref: '#/components/schemas/IntervenedProviderDetailsV2'
+       legalServicesProviderDetails:
+        allOf:
+         - $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
+        description: 'Applicable only for type=Legal Services Provider'
+       practitionerDetails:
+        allOf:
+         - $ref: '#/components/schemas/PractitionerDetailsV2'
+        description: 'Applicable only for type=Barrister / Advocate'
+       headOffice:
+        allOf:
+         - $ref: '#/components/schemas/HeadOfficeDetailsV2'
 
-    QPageNumber:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: number
-      description: Page index for given request (start from 0, default is 0)
+  ProviderPatchV2:
+   type: object
+   properties:
+    name:
+     type: string
+     description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
+    activeDateTo:
+     type: string
+     format: date
+     description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE'
+    intervenedDetails:
+     allOf:
+      - $ref: '#/components/schemas/IntervenedProviderDetailsV2'
+    legalServicesProviderDetails:
+     allOf:
+      - $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
+     description: 'Applicable only for type=Legal Services Provider'
+    practitionerDetails:
+     allOf:
+      - $ref: '#/components/schemas/PractitionerDetailsV2'
+     description: 'Applicable only for type=Barrister / Advocate'
+    headOffice:
+     allOf:
+      - $ref: '#/components/schemas/HeadOfficeDetailsPatchV2'
 
-    QPageSize:
-      name: pageSize
-      in: query
-      required: false
-      schema:
-        type: number
-      description: Page size for given request (default is 100)
+  LegalServicesProviderDetailsV2:
+   type: object
+   required:
+    - constitutionalStatus
+   properties:
+    constitutionalStatus:
+     type: string
+     enum:
+      - Partnership
+      - Limited company
+      - Sole practitioner
+      - Limited Liability Partnership (LLP)
+      - Charity
+      - Government funded organisation
+     description: 'CWA ref: PO_VENDORS.ATTRIBUTE1. `TODO: check the enum values`'
+    indemnityReceivedDate:
+     type: string
+     format: date
+     description: 'CWA ref: PO_VENDORS.ATTRIBUTE2. `TODO: Need better description of this field`'
+    companiesHouseNumber:
+     type: string
+     description: 'CWA ref: PO_VENDORS.ATTRIBUTE11. `TODO: Need better description of this field`'
+     example: '`TODO: provide example`'
+
+  PractitionerDetailsV2:
+   type: object
+   required:
+    - name
+    - level
+    - rollNumber
+   properties:
+    name:
+     type: string
+     description: 'Barrister or Advocate name. CWA ref: PO_VENDOR_SITES_ALL.VENDOR_SITE_CODE_ALT. `TODO: Need better description of this field`'
+     example: 'John Smith'
+    level:
+     type: string
+     enum:
+      - Pupil
+      - Junior
+      - KC
+     description: 'Barrister or Advocate level. CWA ref: PO_VENDORS.ATTRIBUTE10. `TODO: Need better description of this field, any business rules?`'
+    rollNumber:
+     type: string
+     description: 'Bar Council or Solicitors Regulation Authority roll number. CWA ref: PO_VENDORS.ATTRIBUTE11. `TODO: Need better description of this field, any business rules?`'
+     example: '`TODO: provide example`'
+    chamberGUID:
+     type: string
+     description: |
+      Chamber that this practitioner is associated with.
+      Assigning a practitioner to a chamber office. Note that to create new practitioner you need to create new provider firm of type `Barrister` or `Advocate`.
+      Use the GET `/provider-firms?type=Barrister` or `/provider-firms?type=Advocate` to see available `guid`s
+      `TODO: how to remove?`'
+     example: '`TODO: provide example`'
+    chamberFirmId:
+     type: string
+     description:  |
+      Chamber that this practitioner is associated with.
+      Assigning a practitioner to a chamber office. Note that to create new practitioner you need to create new provider firm of type `Barrister` or `Advocate`.
+      Use the GET `/provider-firms?type=Barrister` or `/provider-firms?type=Advocate` to see available `guid`s
+      ``TODO: how to remove?``
+      CWA ref: PO_VENDORS.???. `TODO: mapping - this is providerFirmId`'
+     example: '`TODO: provide example`'
+
+  OfficeCreateV2:
+   type: object
+   required:
+    - address
+   properties:
+    address:
+     $ref: '#/components/schemas/AddressV2'
+    telephoneNumber:
+     $ref: '#/components/schemas/PhoneV2'
+    emailAddress:
+     type: string
+     format: email
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.EMAIL_ADDRESS'
+    dxDetails:
+     $ref: '#/components/schemas/DXV2'
+    vatRegistration:
+     $ref: '#/components/schemas/VATRegistrationV2'
+    paymentDetails:
+     $ref: '#/components/schemas/PaymentDetailsCreateV2'
+    liaisonManager:
+     $ref: '#/components/schemas/LiaisonManagerCreateV2'
+    contractManager:
+     $ref: '#/components/schemas/OfficeContractManagerCreateV2'
+
+  OfficeV2:
+   allOf:
+    - $ref: '#/components/schemas/BaseEntityV2'
+    - type: object
+      required:
+       - officeId
+       - officeAccountNumber
+       - address
+      properties:
+       officeId:
+        type: string
+        description: 'CWA ref: ??? `TODO: which field in CWA?`'
+        example: '`TODO: provide example`'
+       officeAccountNumber:
+        type: string
+        description: 'CWA ref: ??? `TODO: which field in CWA?`'
+        example: '`TODO: provide example`'
+       activeDateTo:
+        type: string
+        format: date
+        description: 'End date of activity. CWA ref: PO_VENDOR_SITES_ALL.INACTIVE_DATE'
+       intervenedDetails:
+        $ref: '#/components/schemas/IntervenedOfficeDetailsV2'
+       address:
+        $ref: '#/components/schemas/AddressV2'
+       telephoneNumber:
+        $ref: '#/components/schemas/PhoneV2'
+       emailAddress:
+        type: string
+        format: email
+        description: 'CWA ref: PO_VENDOR_SITES_ALL.EMAIL_ADDRESS'
+       dxDetails:
+        $ref: '#/components/schemas/DXV2'
+       vatRegistration:
+        $ref: '#/components/schemas/VATRegistrationV2'
+       paymentDetails:
+        $ref: '#/components/schemas/PaymentDetailsV2'
+
+  OfficePatchV2:
+   type: object
+   properties:
+    activeDateTo:
+     type: string
+     format: date
+     description: 'End date of activity. CWA ref: PO_VENDOR_SITES_ALL.INACTIVE_DATE'
+    intervenedDetails:
+     $ref: '#/components/schemas/IntervenedOfficeDetailsV2'
+    address:
+     $ref: '#/components/schemas/AddressV2'
+    telephoneNumber:
+     $ref: '#/components/schemas/PhoneV2'
+    emailAddress:
+     type: string
+     format: email
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.EMAIL_ADDRESS'
+    dxDetails:
+     $ref: '#/components/schemas/DXV2'
+    vatRegistration:
+     $ref: '#/components/schemas/VATRegistrationV2'
+    paymentDetails:
+     $ref: '#/components/schemas/PaymentDetailsV2'
+
+  HeadOfficeDetailsV2:
+   type: object
+   required:
+    - officeId
+    - officeAccountNumber
+   properties:
+    officeGUID:
+     type: string
+     description: 'CWA ref: N/A'
+     example: 'ABCD-DEFG-1234-5678'
+    officeId:
+     type: string
+     description: 'CWA ref: ???? `TODO: which field in CWA?, is this the same as office code?`'
+     example: '`TODO: provide example, is this the same as office code?`'
+    officeAccountNumber:
+     type: string
+     description: 'CWA ref: ???? `TODO: which field in CWA?, is this the same as office code?`'
+     example: '`TODO: provide example, is this the same as office code?`'
+
+  HeadOfficeDetailsPatchV2:
+   type: object
+   required:
+    - officeId
+    - officeAccountNumber
+   properties:
+    officeGUID:
+     type: string
+     description: 'CWA ref: N/A'
+     example: 'ABCD-DEFG-1234-5678'
+
+  IntervenedProviderDetailsV2:
+   type: object
+   required:
+    - intervenedFlag
+    - intervenedChangeDate
+   properties:
+    intervenedFlag:
+     type: string
+     enum:
+      - Y
+      - N
+     description: 'CWA ref: PO_VENDORS.ATTRIBUTE13. `TODO: Need better description of this field, any business rules? check if this should be synced with head office data or if this is separate function`'
+    intervenedChangeDate:
+     type: string
+     format: date
+     description: 'CWA ref: PO_VENDORS.ATTRIBUTE15. `TODO: Need better description of this field, any business rules? check if this should be synced with head office data or if this is separate function`'
+
+
+  IntervenedOfficeDetailsV2:
+   type: object
+   required:
+    - intervenedFlag
+    - intervenedChangeDate
+   properties:
+    intervenedFlag:
+     type: string
+     enum:
+      - Y
+      - N
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.ATTRIBUTE11. `TODO: Need better description of this field, any business rules?`'
+    intervenedChangeDate:
+     type: string
+     format: date
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.ATTRIBUTE12. `TODO: Need better description of this field, any business rules?`'
+
+
+  AddressV2:
+   type: object
+   required:
+    - line1
+    - townOrCity
+    - postcode
+   properties:
+    line1:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE1. `TODO: find out what address info is stored in this attribute`'
+     example: '`TODO: provide example`'
+    line2:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE2. `TODO: find out what address info is stored in this attribute`'
+     example: '`TODO: provide example`'
+    line3:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE3. `TODO: find out what address info is stored in this attribute`'
+     example: '`TODO: provide example`'
+    line4:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE4. `TODO: find out what address info is stored in this attribute`'
+     example: '`TODO: provide example`'
+    townOrCity:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.CITY. `TODO: any business rules for verifying data?`'
+     example: '`TODO: provide example`'
+    county:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.COUNTY. `TODO: any business rules for verifying data?`'
+     example: '`TODO: provide example`'
+    postcode:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.ZIP. `TODO: any business rules for verifying data?`'
+     example: '`TODO: provide example`'
+
+  PhoneV2:
+   type: object
+   required:
+    - area
+    - phone
+   properties:
+    area:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.AREA_CODE. `TODO: any business rules for verifying data? do we need it as a separate field?`'
+    phone:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.PHONE. `TODO: any business rules for verifying data? do we need it as a separate field?`'
+  DXV2:
+   type: object
+   required:
+    - dxNumber
+    - dxCentre
+   properties:
+    dxNumber:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.ATTRIBUTE6. `TODO: need better description of this field`'
+    dxCentre:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.ATTRIBUTE7. `TODO: need better description of this field`'
+
+  VATRegistrationV2:
+   type: object
+   required:
+    - vatNumber
+   properties:
+    vatNumber:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.VAT_REGISTRATION_NUM'
+
+  PaymentDetailsCreateV2:
+   type: object
+   required:
+    - paymentMethod
+   properties:
+    paymentMethod:
+     type: string
+     enum:
+      - Cheque
+      - Electronic
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.EDI_PAYMENT_METHOD. `TODO: check the enum values. Any business rules?`'
+    bankAccountDetails:
+     $ref: '#/components/schemas/BankAccountCreateV2'
+     description: 'Bank details do not apply if paymentMethod=Cheque'
+
+  PaymentDetailsV2:
+   type: object
+   required:
+    - paymentMethod
+   properties:
+    paymentMethod:
+     type: string
+     enum:
+      - Cheque
+      - Electronic
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.EDI_PAYMENT_METHOD. `TODO: check the enum values. Any business rules?`'
+    paymentHeldFlag:
+     type: string
+     enum:
+      - Y
+      - N
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.HOLD_ALL_PAYMENTS_FLAG. `TODO: check the enum values. Any business rules?`'
+    paymentHeldReason:
+     type: string
+     description: 'CWA ref: PO_VENDOR_SITES_ALL.HOLD_REASON. `TODO: check if this is mandatory when paymentHeldFlag=Y`'
+    bankAccountDetailsGUID:
+     type: string
+     description: 'CWA ref: N/A'
+
+
+  BankAccountCreateV2:
+   type: object
+   required:
+    - accountName
+    - sortCode
+    - accountNumber
+    - activeDateFrom
+    - primary
+   properties:
+    accountName:
+     type: string
+     description: 'CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NAME'
+    sortCode:
+     type: string
+     description: 'CWA ref: AP_BANK_BRANCHES.BANK_NUM'
+    accountNumber:
+     type: string
+     description: 'CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NUM'
+    activeDateFrom:
+     type: string
+     format: date
+     description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.START_DATE'
+    activeDateTo:
+     type: string
+     format: date
+     description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.END_DATE'
+    primary:
+     type: boolean
+     description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.PRIMARY_FLAG. `TODO: should we keep this flag in local? or should it be like the head office a property on the provider firm? What happens when this flag is set when creating an additional office?`'
+
+
+  BankAccountV2:
+   allOf:
+    - $ref: '#/components/schemas/BaseEntityV2'
+    - type: object
+      required:
+       - accountName
+       - sortCode
+       - accountNumber
+       - activeDateFrom
+       - primary
+      properties:
+       accountName:
+        type: string
+        description: 'CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NAME'
+       sortCode:
+        type: string
+        description: 'CWA ref: AP_BANK_BRANCHES.BANK_NUM'
+       accountNumber:
+        type: string
+        description: 'CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NUM'
+       activeDateFrom:
+        type: string
+        format: date
+        description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.START_DATE'
+       activeDateTo:
+        type: string
+        format: date
+        description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.END_DATE'
+       primary:
+        type: boolean
+        description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.PRIMARY_FLAG. `TODO: should we keep this flag in local? or should it be like the head office a property on the provider firm?`'
+
+
+  BankAccountPatchV2:
+   type: object
+   properties:
+    activeDateTo:
+     type: string
+     format: date
+     description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.END_DATE'
+    primary:
+     type: boolean
+     description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.PRIMARY_FLAG. `TODO: should we keep this flag in local? or should it be like the head office a property on the provider firm?`'
+
+  OfficeBankAccountPatchV2:
+   type: object
+   properties:
+    bankAccountDetailGUID:
+     $ref: '#/components/schemas/BaseEntityGUIDV2'
+
+  LiaisonManagerCreateV2:
+   type: object
+   required:
+    - firstName
+    - lastName
+    - emailAddress
+    - telephoneNumber
+    - activeDateFrom
+   properties:
+    firstName:
+     type: string
+     description: 'CWA ref: PO_VENDOR_CONTACTS.FIRST_NAME'
+    lastName:
+     type: string
+     description: 'CWA ref: PO_VENDOR_CONTACTS.LAST_NAME'
+    emailAddress:
+     type: string
+     format: email
+     description: 'CWA ref: PO_VENDOR_CONTACTS.EMAIL_ADDRESS'
+    telephoneNumber:
+     $ref: '#/components/schemas/PhoneV2'
+    website:
+     type: string
+     format: uri
+     description: 'CWA ref: PO_VENDOR_CONTACTS.URL'
+    activeDateFrom:
+     type: string
+     format: date
+     description: 'CWA ref: PO_VENDOR_CONTACTS.CREATION_DATE'
+    activeDateTo:
+     type: string
+     format: date
+     description: 'CWA ref: PO_VENDOR_CONTACTS.INACTIVE_DATE'
+
+  LiaisonManagerV2:
+   allOf:
+    - $ref: '#/components/schemas/BaseEntityV2'
+    - type: object
+      required:
+       - firstName
+       - lastName
+       - emailAddress
+       - telephoneNumber
+       - activeDateFrom
+      properties:
+       firstName:
+        type: string
+        description: 'CWA ref: PO_VENDOR_CONTACTS.FIRST_NAME'
+       lastName:
+        type: string
+        description: 'CWA ref: PO_VENDOR_CONTACTS.LAST_NAME'
+       emailAddress:
+        type: string
+        format: email
+        description: 'CWA ref: PO_VENDOR_CONTACTS.EMAIL_ADDRESS'
+       telephoneNumber:
+        $ref: '#/components/schemas/PhoneV2'
+       website:
+        type: string
+        format: uri
+        description: 'CWA ref: PO_VENDOR_CONTACTS.URL'
+       activeDateFrom:
+        type: string
+        format: date
+        description: 'CWA ref: PO_VENDOR_CONTACTS.CREATION_DATE'
+       activeDateTo:
+        type: string
+        format: date
+        description: 'CWA ref: PO_VENDOR_CONTACTS.INACTIVE_DATE'
+
+
+  OfficeLiaisonManagerPatchV2:
+   type: object
+   properties:
+    liaisonManagerGUID:
+     $ref: '#/components/schemas/BaseEntityGUIDV2'
+
+  OfficeContractManagerCreateV2:
+   type: object
+   properties:
+    contractManagerId:
+     type: string
+     example: '`TODO: provide example`'
+     description: 'CWA ref: ??? `TODO: which field in CWA?`'
+
+  OfficePractitionerCreateV2:
+   type: object
+   properties:
+    providerFirmGUID:
+     $ref: '#/components/schemas/BaseEntityGUIDV2'
+
+  OfficePractitionerV2:
+   allOf:
+    - $ref: '#/components/schemas/BaseEntityV2'
+    - $ref: '#/components/schemas/PractitionerDetailsV2'
+    - type: object
+      properties:
+       type:
+        $ref: '#/components/schemas/ProviderFirmTypeV2'
+       activeDateTo:
+        type: string
+        format: date
+        description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE'
+
+  ContractManagerV2:
+   type: object
+   required:
+    - contractManagerId
+    - firstName
+    - lastName
+   properties:
+    contractManagerId:
+     type: string
+     example: '`TODO: provide example`'
+     description: 'CWA ref: ??? `TODO: which field in CWA?`'
+    firstName:
+     type: string
+     example: 'John'
+     description: 'CWA ref: ??? `TODO: which field in CWA?`'
+    lastName:
+     type: string
+     example: 'Smith'
+     description: 'CWA ref: ??? `TODO: which field in CWA?`'
+    email:
+     type: string
+     format: email
+     example: 'john.smith@example.com'
+     description: 'CWA ref: ??? `TODO: which field in CWA?`'
+
+  OfficeContractManagerV2:
+   allOf:
+    - $ref: '#/components/schemas/BaseEntityV2'
+    - type: object
+      required:
+       - contractManagerId
+       - firstName
+       - lastName
+      properties:
+       contractManagerId:
+        type: string
+        example: 'TODO: provide example'
+        description: 'CWA ref: ??? `TODO: which field in CWA?`'
+       firstName:
+        type: string
+        example: 'John'
+        description: 'CWA ref: ??? `TODO: which field in CWA?`'
+       lastName:
+        type: string
+        example: 'Smith'
+        description: 'CWA ref: ??? `TODO: which field in CWA?`'
+       email:
+        type: string
+        format: email
+        example: 'john.smith@example.com'
+        description: 'CWA ref: ??? `TODO: which field in CWA?`'
+       activeDateTo:
+        type: string
+        format: date
+        description: 'CWA ref: ??? `TODO: which field in CWA?`'
+
+
+  PaginatedSearchV2:
+   type: object
+   required:
+    - searchCriteria
+    - pagination
+   properties:
+    searchCriteria:
+     $ref: '#/components/schemas/SearchCriteriaV2'
+    pagination:
+     $ref: '#/components/schemas/PaginationV2'
+    sort:
+     $ref: '#/components/schemas/SortV2'
+
+  SearchCriteriaV2:
+   type: object
+   properties:
+    criteria:
+     type: array
+     items:
+      $ref: '#/components/schemas/SearchCriterionV2'
+
+  SearchCriterionV2:
+   type: object
+   properties:
+    filter:
+     type: string
+     example: 'guid'
+     description: 'Filter key'
+    values:
+     type: array
+     items:
+      type: string
+      example: 'ABCD-EFGH-1234-5678'
+      description: 'Filter value(s) used for this search'
+
+  PaginationV2:
+   type: object
+   properties:
+    currentPage:
+     type: number
+     example: 2
+     description: 'Page index denoting the current page index for response, starting from 0'
+    pageSize:
+     type: number
+     example: 10
+     description: 'Page size used for this search'
+    totalPages:
+     type: number
+     example: 5
+     description: 'Total number of pages'
+    totalItems:
+     type: number
+     example: 123
+     description: 'Total number of records for given search request'
+
+  SortV2:
+   type: object
+   properties:
+    field:
+     type: string
+     example: "sortByOption"
+    direction:
+     type: string
+     enum: [ asc, desc ]
+     example: "asc"
+
+  LinksV2:
+   type: object
+   properties:
+    self:
+     type: string
+     example: "/example?page=2&pageSize=10"
+     format: uri
+    next:
+     type: string
+     example: "/example?page=3&pageSize=10"
+     format: uri
+    prev:
+     type: string
+     example: "/example?page=1&pageSize=10"
+     format: uri
+    first:
+     type: string
+     example: "/example?page=1&pageSize=10"
+     format: uri
+    last:
+     type: string
+     example: "/example?page=5&pageSize=10"
+     format: uri
+
+  ProviderFirmChangedSnapshotEventV2Payload:
+   type: object
+   properties:
+    providerFirm:
+     $ref: '#/components/schemas/ProviderV2'
+    bankDetails:
+     type: array
+     items:
+      $ref: '#/components/schemas/BankAccountV2'
+    offices:
+     type: array
+     items:
+      allOf:
+       - $ref: '#/components/schemas/OfficeV2'
+       - type: object
+         required:
+          - liaisonManagers
+          - contractManagers
+         properties:
+          liasonManagers:
+           type: array
+           items:
+            $ref: '#/components/schemas/LiaisonManagerV2'
+          contractManagers:
+           type: array
+           items:
+            $ref: '#/components/schemas/ContractManagerV2'
+
+
+  EventTypeV2:
+   type: string
+   enum:
+    - ProviderFirmChangedSnapshotEvent
+
+  EventHeaderV2:
+   allOf:
+    - $ref: '#/components/schemas/BaseEntityV2'
+    - type: object
+      properties:
+       eventType:
+        $ref: '#/components/schemas/EventTypeV2'
+       correlationId:
+        type: string
+       traceId:
+        type: string
+
+  EventV2:
+   allOf:
+    - $ref: '#/components/schemas/BaseEntityV2'
+    - type: object
+      required:
+       - eventHeader
+       - eventPayload
+      properties:
+       eventHeader:
+        $ref: '#/components/schemas/EventHeaderV2'
+       eventPayload:
+        oneOf:
+         - $ref: '#/components/schemas/ProviderFirmChangedSnapshotEventV2Payload'
+
+ parameters:
+  XCorrelationId:
+   name: x-correlation-id
+   in: header
+   required: false
+   schema:
+    type: string
+   description: Correlation ID for tracing requests
+  TraceParentHeader:
+   name: transparent
+   in: header
+   required: false
+   schema:
+    type: string
+    pattern: '^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$'
+   description: >
+    W3C Trace Context header used for distributed tracing.
+    Format: 00-<trace-id>-<span-id>-<trace-flags>.
+    Example: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-0
+  ProviderFirmGUIDorFirmId:
+   name: providerFirmGUIDorFirmId
+   in: path
+   required: true
+   schema:
+    type: string
+   description: >
+    Provider Firm GUID (primary key) or Firm ID a.k.a Account Number (unique key).
+  OfficeGUIDorCode:
+   name: officeGUIDorCode
+   in: path
+   required: true
+   schema:
+    type: string
+   description: >
+    Office GUID (primary key) or Office code (unique key).
+  BankAccountDetailGUID:
+   name: bankAccountDetailGUID
+   in: path
+   required: true
+   schema:
+    type: string
+   description: >
+    Bank account details GUID (primary key). 
+  
+
+  QPageNumber:
+   name: page
+   in: query
+   required: false
+   schema:
+    type: number
+   description: Page index for given request (start from 0, default is 0)
+
+  QPageSize:
+   name: pageSize
+   in: query
+   required: false
+   schema:
+    type: number
+   description: Page size for given request (default is 100)
 
 
 
 security:
-  - bearerAuth: []
-
+ - bearerAuth: []
