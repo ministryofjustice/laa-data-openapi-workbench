@@ -144,7 +144,10 @@ paths:
    tags:
     - Contract Managers
    description: |
-    Retrieve a list of contract managers. These are employee records in CWA and potentially we need to get this information from SiLAS.
+    Retrieve a list of contract managers. 
+    
+    These are employee records in CWA and potentially we need to get this information from SiLAS.
+    
     Contract managers are required for assigning contracts and schedules to a provider firm.
    parameters:
     - $ref: '#/components/parameters/XCorrelationId'
@@ -162,7 +165,8 @@ paths:
       required: false
       schema:
        type: string
-      description: Fuzzy search by contract manager name (searches both first and last names)
+      description: |
+       Fuzzy search by contract manager name (searches both first and last names)
     - $ref: '#/components/parameters/QPageNumber'
     - $ref: '#/components/parameters/QPageSize'
    responses:
@@ -225,10 +229,14 @@ paths:
     - Provider Firms
    description: |
     Adds one legal service providers (e.g., solicitors, chambers, advocates) to the system.
+    
     Each provider must include a name, type, and other optional metadata. 
+    
     The request body should contain a `provider`, where each item follows the `ProviderCreateV2` schema.
+    
     `legalServicesProviderDetails` applicable only to `type`=`Legal Services Provider`.
-    `practitionerDetails` applicable only to `type`=`Barrister` or `type`=`Advocate`.
+    
+    `practitionerDetails` applicable only to `type`=`Advocate` (also `Barrister`).
    parameters:
     - $ref: '#/components/parameters/XCorrelationId'
     - $ref: '#/components/parameters/TraceParentHeader'
@@ -250,8 +258,9 @@ paths:
           type: object
           properties:
            providerFirmGUID:
-            type: string
-            description: Unique identifier of the created provider
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
+           providerFirmId:
+            $ref: '#/components/schemas/ProviderFirmIdV2'
 
     '400':
      description: Invalid input
@@ -476,8 +485,9 @@ paths:
           type: object
           properties:
            providerFirmGUID:
-            type: string
-            description: Unique identifier of the created provider
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
+           providerFirmId:
+            $ref: '#/components/schemas/ProviderFirmIdV2'
 
     '403':
      description: Forbidden
@@ -511,7 +521,8 @@ paths:
     - Provider Firm Bank Accounts
    description: |
     Create new bank account details used by given provider firm.
-    Setting `primary`=`true` results in `TODO: ?????`
+
+    Setting `primaryFlag`=`true` results in `TODO: business rules ?????`
    parameters:
     - $ref: '#/components/parameters/XCorrelationId'
     - $ref: '#/components/parameters/TraceParentHeader'
@@ -534,11 +545,11 @@ paths:
           type: object
           properties:
            providerFirmGUID:
-            type: string
-            description: Unique identifier of the created provider
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
+           providerFirmId:
+            $ref: '#/components/schemas/ProviderFirmIdV2'
            bankAccountDetailGUID:
-            type: string
-            description: Unique identifier of the created bank detail
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
 
     '400':
      description: Invalid input
@@ -573,12 +584,24 @@ paths:
    description: |
     Retrieve bank account details for a given provider. This list may be be used to get 
     `guid`s that can be used in the office PATCH operation to set alternative bank account details.
+
+    For `Legal Service Provider` firm type the response returns LSP specific bank accounts only.
+
+    For `Advocate` firm type the response returns all bank accounts not associated with an LSP.
    parameters:
     - $ref: '#/components/parameters/XCorrelationId'
     - $ref: '#/components/parameters/TraceParentHeader'
     - $ref: '#/components/parameters/ProviderFirmGUIDorFirmId'
+    - name: bankAccountNumber
+      in: query
+      required: false
+      schema:
+       type: string
+      description: |
+       Partial text search by bank account number
     - $ref: '#/components/parameters/QPageNumber'
     - $ref: '#/components/parameters/QPageSize'
+
    responses:
     '200':
      description: List of providers matching the filters
@@ -685,7 +708,7 @@ paths:
    description: |
     Updating provider bank details endpoint is used for the following use cases:
     1) Deactivating bank details by setting `activeDateTo` `TODO: what effect does this have on office that have it assigned?`
-    2) Nominating bank detail as primary using `primary`=`true` `TODO: does this have a functional effect in the backend?`
+    2) Nominating bank detail as primary using `primaryFlag`=`true` `TODO: does this have a functional effect in the backend?`
    parameters:
     - $ref: '#/components/parameters/XCorrelationId'
     - $ref: '#/components/parameters/TraceParentHeader'
@@ -709,8 +732,11 @@ paths:
           type: object
           properties:
            providerFirmGUID:
-            type: string
-            description: Unique identifier of the created provider
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
+           providerFirmId:
+            $ref: '#/components/schemas/ProviderFirmIdV2'
+           bankAccountDetailGUID:
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
 
     '403':
      description: Forbidden
@@ -744,7 +770,6 @@ paths:
     - Provider Firm Offices
    description: |
     Create new office details used by given provider firm.
-    Setting `primary`=`true` results in `TODO: ?????`
    parameters:
     - $ref: '#/components/parameters/XCorrelationId'
     - $ref: '#/components/parameters/TraceParentHeader'
@@ -767,11 +792,13 @@ paths:
           type: object
           properties:
            providerFirmGUID:
-            type: string
-            description: Unique identifier of the created provider
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
+           providerFirmId:
+            $ref: '#/components/schemas/ProviderFirmIdV2'
            officeGUID:
-            type: string
-            description: Unique identifier of the created office
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
+           officeCode:
+            $ref: '#/components/schemas/OfficeAccountNumberV2'
 
     '400':
      description: Invalid input
@@ -1017,8 +1044,13 @@ paths:
           type: object
           properties:
            providerFirmGUID:
-            type: string
-            description: Unique identifier of the created provider
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
+           providerFirmId:
+            $ref: '#/components/schemas/ProviderFirmIdV2'
+           officeGUID:
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
+           officeCode:
+            $ref: '#/components/schemas/OfficeAccountNumberV2'
     '403':
      description: Forbidden
      content:
@@ -1074,14 +1106,15 @@ paths:
           type: object
           properties:
            providerFirmGUID:
-            type: string
-            description: Unique identifier of the created provider
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
+           providerFirmId:
+            $ref: '#/components/schemas/ProviderFirmIdV2'
            officeGUID:
-            type: string
-            description: Unique identifier of the created office
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
+           officeCode:
+            $ref: '#/components/schemas/OfficeAccountNumberV2'
            liaisonManagerGUID:
-            type: string
-            description: Unique identifier of the created liaison manager
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
 
     '400':
      description: Invalid input
@@ -1194,14 +1227,16 @@ paths:
           type: object
           properties:
            providerFirmGUID:
-            type: string
-            description: Unique identifier of the created provider
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
+           providerFirmId:
+            $ref: '#/components/schemas/ProviderFirmIdV2'
            officeGUID:
+            $ref: '#/components/schemas/BaseEntityGUIDV2'
+           officeCode:
+            $ref: '#/components/schemas/OfficeAccountNumberV2'
+           contractManagerId:
             type: string
-            description: Unique identifier of the created office
-           liaisonManagerGUID:
-            type: string
-            description: Unique identifier of the created liaison manager
+            description: Unique identifier of the assigned contract manager
 
     '400':
      description: Invalid input
@@ -1441,6 +1476,16 @@ components:
        example: 'P00SE'
 
 
+  ProviderFirmIdV2:
+   type: string
+   description: |
+    Unique provider firm identifier. CWA ref: PO_VENDORS.VENDOR_ID or PO_VENDOR_CONTACTS.SEGMENT1 
+    
+    `TODO: check which one to use, SiLAS uses segment1` but all V1 endpoints use VENDOR_ID as path variable???.       
+    `TODO: is this the same as account number? CWA ref, is it segment 1?`
+    `TODO: do we need ccmsFirmId?? xxccms_provider_offices_v.providerfirm_id`
+    `TODO: check rules for generating these numbers and check what sequence number to start from at go live`
+   example: '3856'
 
   ProviderFirmTypeV2:
    type: string
@@ -1448,7 +1493,10 @@ components:
     - Legal Services Provider
     - Chambers
     - Advocate
-    - Barrister
+   description: |
+    Type of the provider firm. Baristers are entered as Advocates. 
+    CWA ref: PO_VENDORS.ATTRIBUTE4. 
+    `TODO: check if these are all valid types.` 
 
   ProviderCreateV2:
    type: object
@@ -1459,22 +1507,31 @@ components:
     type:
      allOf:
       - $ref: '#/components/schemas/ProviderFirmTypeV2'
-     description: 'Type of the provider firm. CWA ref: PO_VENDORS.ATTRIBUTE4. `TODO: check the enum values`'
+     description: |
+      Type of the provider firm. 
+      CWA ref: PO_VENDORS.ATTRIBUTE4.
     name:
      type: string
-     description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
+     description: |
+      Name of the provider firm. 
+      CWA ref: PO_VENDORS.VENDOR_NAME
     activeDateTo:
      type: string
      format: date
-     description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE. `TODO: check if this should be synced with head office available to date or if this is separate function`'
+     description: |
+      End date of activity. 
+      CWA ref: PO_VENDORS.END_DATE_ACTIVE. 
+      `TODO: check if this should be synced with head office available to date or if this is separate function`
     legalServicesProviderDetails:
      allOf:
       - $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
-     description: 'Applicable only for type=Legal Services Provider'
+     description: |
+      Applicable only for type=Legal Services Provider
     practitionerDetails:
      allOf:
       - $ref: '#/components/schemas/PractitionerDetailsV2'
-     description: 'Applicable only for type=Barrister / Advocate'
+     description: |
+      Applicable only for type=Advocate (and Barrister)
     headOffice:
      allOf:
       - $ref: '#/components/schemas/OfficeCreateV2'
@@ -1490,31 +1547,43 @@ components:
       properties:
        providerFirmId:
         type: string
-        description: 'Unique provider firm identifier. CWA ref: ???. `TODO: is this the same as account number? CWA ref, is it segment 1?`'
+        description: |
+         Unique provider firm identifier. CWA ref: PO_VENDORS.VENDOR_ID or PO_VENDOR_CONTACTS.SEGMENT1 
+         `TODO: check which one to use, SiLAS uses segment1` but all V1 endpoints use VENDOR_ID as path variable???. 
+         `TODO: is this the same as account number? CWA ref, is it segment 1?`
+         `TODO: do we need ccmsFirmId?? xxccms_provider_offices_v.providerfirm_id`
         example: '`TODO: provide example`'
        type:
         allOf:
          - $ref: '#/components/schemas/ProviderFirmTypeV2'
-        description: 'Type of the provider firm. CWA ref: PO_VENDORS.ATTRIBUTE4'
+        description: |
+         Type of the provider firm. 
+         CWA ref: PO_VENDORS.ATTRIBUTE4
        name:
         type: string
-        description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
+        description: |
+         Name of the provider firm. 
+         CWA ref: PO_VENDORS.VENDOR_NAME
         example: 'Legal Services Co.'
        activeDateTo:
         type: string
         format: date
-        description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE'
+        description: |
+         End date of activity. 
+         CWA ref: PO_VENDORS.END_DATE_ACTIVE
        intervenedDetails:
         allOf:
          - $ref: '#/components/schemas/IntervenedProviderDetailsV2'
        legalServicesProviderDetails:
         allOf:
          - $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
-        description: 'Applicable only for type=Legal Services Provider'
+        description: |
+         Applicable only for type=Advocate (and Barrister)
        practitionerDetails:
         allOf:
          - $ref: '#/components/schemas/PractitionerDetailsV2'
-        description: 'Applicable only for type=Barrister / Advocate'
+        description: |
+         Applicable only for type=Barrister / Advocate'
        headOffice:
         allOf:
          - $ref: '#/components/schemas/HeadOfficeDetailsV2'
@@ -1524,22 +1593,29 @@ components:
    properties:
     name:
      type: string
-     description: 'Name of the provider firm. CWA ref: PO_VENDORS.VENDOR_NAME'
+     description:  |
+      Name of the provider firm. 
+      CWA ref: PO_VENDORS.VENDOR_NAME
     activeDateTo:
      type: string
      format: date
-     description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE'
+     description:  |
+      End date of activity. 
+      CWA ref: PO_VENDORS.END_DATE_ACTIVE. 
+      `TODO: check if this should be synced with head office available to date or if this is separate function`
     intervenedDetails:
      allOf:
       - $ref: '#/components/schemas/IntervenedProviderDetailsV2'
     legalServicesProviderDetails:
      allOf:
       - $ref: '#/components/schemas/LegalServicesProviderDetailsV2'
-     description: 'Applicable only for type=Legal Services Provider'
+     description:  |
+      Applicable only for type=Legal Services Provider
     practitionerDetails:
      allOf:
       - $ref: '#/components/schemas/PractitionerDetailsV2'
-     description: 'Applicable only for type=Barrister / Advocate'
+     description: |
+      Applicable only for type=Advocate (and Barrister)
     headOffice:
      allOf:
       - $ref: '#/components/schemas/HeadOfficeDetailsPatchV2'
@@ -1557,15 +1633,30 @@ components:
       - Sole practitioner
       - Limited Liability Partnership (LLP)
       - Charity
-      - Government funded organisation
-     description: 'CWA ref: PO_VENDORS.ATTRIBUTE1. `TODO: check the enum values`'
+      - Government Funded Organisation
+     description: |
+      N/A for Firm type Advocate or Chambers. 
+
+      For Legal Services provider, options are: `TODO: check the enum values`
+       - Partnership, 
+       - Limited Company, 
+       - Sole Practitioner, 
+       - LLAP, `TODO: check why in MAPD documentation it is Limited Liability Partnership (LLP)`
+       - Charity, 
+       - Government Funded Organisation.
+      
+      CWA ref: PO_VENDORS.ATTRIBUTE1.
     indemnityReceivedDate:
      type: string
      format: date
-     description: 'CWA ref: PO_VENDORS.ATTRIBUTE2. `TODO: Need better description of this field`'
+     description: |
+      CWA ref: PO_VENDORS.ATTRIBUTE2. `TODO: Need better description of this field`
     companiesHouseNumber:
      type: string
-     description: 'CWA ref: PO_VENDORS.ATTRIBUTE11. `TODO: Need better description of this field`'
+     description: |
+      CWA ref: PO_VENDORS.ATTRIBUTE11 (WARNING: same field is used for Advocates for bar council roll number). 
+      
+      `TODO: Need better description of this field`
      example: '`TODO: provide example`'
 
   PractitionerDetailsV2:
@@ -1573,11 +1664,15 @@ components:
    required:
     - name
     - level
+    - barristerFlag
     - rollNumber
    properties:
     name:
      type: string
-     description: 'Barrister or Advocate name. CWA ref: PO_VENDOR_SITES_ALL.VENDOR_SITE_CODE_ALT. `TODO: Need better description of this field`'
+     description: |
+      Barrister or Advocate name. CWA ref: PO_VENDOR_SITES_ALL.VENDOR_SITE_CODE_ALT. 
+      
+      `TODO: Need better description of this field`'
      example: 'John Smith'
     level:
      type: string
@@ -1585,28 +1680,39 @@ components:
       - Pupil
       - Junior
       - KC
-     description: 'Barrister or Advocate level. CWA ref: PO_VENDORS.ATTRIBUTE10. `TODO: Need better description of this field, any business rules?`'
+     description: |
+      Barrister or Advocate level. CWA ref: PO_VENDORS.ATTRIBUTE10. 
+      
+      `TODO: Need better description of this field, any business rules?`
     rollNumber:
      type: string
-     description: 'Bar Council or Solicitors Regulation Authority roll number. CWA ref: PO_VENDORS.ATTRIBUTE11. `TODO: Need better description of this field, any business rules?`'
+     description: |
+      Bar Council or Solicitors Regulation Authority roll number. 
+      
+      CWA ref: PO_VENDORS.ATTRIBUTE11 (WARNING: same field is used for LSP for Company house number). 
+      
+      `TODO: Need better description of this field, any business rules?`
      example: '`TODO: provide example`'
+    barristerFlag:
+     type: boolean
+     description: |
+      If set to true this is a `Barrister`. 
+      
+      CWA ref: ??? `TODO: which field in CWA?`
     chamberGUID:
      type: string
      description: |
       Chamber that this practitioner is associated with.
-      Assigning a practitioner to a chamber office. Note that to create new practitioner you need to create new provider firm of type `Barrister` or `Advocate`.
-      Use the GET `/provider-firms?type=Barrister` or `/provider-firms?type=Advocate` to see available `guid`s
-      `TODO: how to remove?`'
+      
+      Assigning a practitioner to a chamber office. Note that to create new practitioner you need to create new provider firm of type `Advocate`.
+      Use the GET `/provider-firms?type=Advocate` to see available `guid`s
+
+      Advocate does not have an office but is linked to the Chamber's office instead
+
+      `TODO: how to remove?`
      example: '`TODO: provide example`'
     chamberFirmId:
-     type: string
-     description:  |
-      Chamber that this practitioner is associated with.
-      Assigning a practitioner to a chamber office. Note that to create new practitioner you need to create new provider firm of type `Barrister` or `Advocate`.
-      Use the GET `/provider-firms?type=Barrister` or `/provider-firms?type=Advocate` to see available `guid`s
-      ``TODO: how to remove?``
-      CWA ref: PO_VENDORS.???. `TODO: mapping - this is providerFirmId`'
-     example: '`TODO: provide example`'
+     $ref: '#/components/schemas/ProviderFirmIdV2'
 
   OfficeCreateV2:
    type: object
@@ -1620,7 +1726,8 @@ components:
     emailAddress:
      type: string
      format: email
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.EMAIL_ADDRESS'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.EMAIL_ADDRESS
     dxDetails:
      $ref: '#/components/schemas/DXV2'
     vatRegistration:
@@ -1632,6 +1739,26 @@ components:
     contractManager:
      $ref: '#/components/schemas/OfficeContractManagerCreateV2'
 
+  OfficeIdV2:
+   type: string
+   description: |
+    Unique office identifier. 'CWA ref: PO_VENDOR_SITES_ALL.VENDOR_SITE_ID ??? `TODO: which field in CWA?`' 
+    
+    `TODO: which field in CWA?, is this the same as office code?`
+    `TODO: check terminology and CWA mapping`
+   example: '123'
+
+
+  OfficeAccountNumberV2:
+   type: string
+   description: |
+    Unique office identifier. 'CWA ref: PO_VENDOR_SITES_ALL.VENDOR_SITE_CODE ??? `TODO: which field in CWA?`' 
+    
+    `TODO: which field in CWA?, is this the same as office code?`
+    `TODO: check terminology and CWA mapping`
+   example: '0Q731M'
+
+
   OfficeV2:
    allOf:
     - $ref: '#/components/schemas/BaseEntityV2'
@@ -1642,17 +1769,16 @@ components:
        - address
       properties:
        officeId:
-        type: string
-        description: 'CWA ref: ??? `TODO: which field in CWA?`'
-        example: '`TODO: provide example`'
+        $ref: '#/components/schemas/OfficeIdV2'
        officeAccountNumber:
-        type: string
-        description: 'CWA ref: ??? `TODO: which field in CWA?`'
-        example: '`TODO: provide example`'
+        $ref: '#/components/schemas/OfficeAccountNumberV2'
        activeDateTo:
         type: string
         format: date
-        description: 'End date of activity. CWA ref: PO_VENDOR_SITES_ALL.INACTIVE_DATE'
+        description: |
+         End date of activity. 
+         
+         CWA ref: PO_VENDOR_SITES_ALL.INACTIVE_DATE
        intervenedDetails:
         $ref: '#/components/schemas/IntervenedOfficeDetailsV2'
        address:
@@ -1662,7 +1788,8 @@ components:
        emailAddress:
         type: string
         format: email
-        description: 'CWA ref: PO_VENDOR_SITES_ALL.EMAIL_ADDRESS'
+        description: |
+         CWA ref: PO_VENDOR_SITES_ALL.EMAIL_ADDRESS
        dxDetails:
         $ref: '#/components/schemas/DXV2'
        vatRegistration:
@@ -1676,7 +1803,10 @@ components:
     activeDateTo:
      type: string
      format: date
-     description: 'End date of activity. CWA ref: PO_VENDOR_SITES_ALL.INACTIVE_DATE'
+     description: |
+      End date of activity. 
+      
+      CWA ref: PO_VENDOR_SITES_ALL.INACTIVE_DATE
     intervenedDetails:
      $ref: '#/components/schemas/IntervenedOfficeDetailsV2'
     address:
@@ -1686,7 +1816,8 @@ components:
     emailAddress:
      type: string
      format: email
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.EMAIL_ADDRESS'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.EMAIL_ADDRESS
     dxDetails:
      $ref: '#/components/schemas/DXV2'
     vatRegistration:
@@ -1701,28 +1832,21 @@ components:
     - officeAccountNumber
    properties:
     officeGUID:
-     type: string
-     description: 'CWA ref: N/A'
-     example: 'ABCD-DEFG-1234-5678'
+     $ref: '#/components/schemas/BaseEntityGUIDV2'
     officeId:
-     type: string
-     description: 'CWA ref: ???? `TODO: which field in CWA?, is this the same as office code?`'
-     example: '`TODO: provide example, is this the same as office code?`'
+     $ref: '#/components/schemas/OfficeIdV2'
     officeAccountNumber:
-     type: string
-     description: 'CWA ref: ???? `TODO: which field in CWA?, is this the same as office code?`'
-     example: '`TODO: provide example, is this the same as office code?`'
+     $ref: '#/components/schemas/OfficeAccountNumberV2'
 
   HeadOfficeDetailsPatchV2:
    type: object
-   required:
-    - officeId
-    - officeAccountNumber
    properties:
     officeGUID:
-     type: string
-     description: 'CWA ref: N/A'
-     example: 'ABCD-DEFG-1234-5678'
+     $ref: '#/components/schemas/BaseEntityGUIDV2'
+    officeId:
+     $ref: '#/components/schemas/OfficeIdV2'
+    officeAccountNumber:
+     $ref: '#/components/schemas/OfficeAccountNumberV2'
 
   IntervenedProviderDetailsV2:
    type: object
@@ -1731,15 +1855,18 @@ components:
     - intervenedChangeDate
    properties:
     intervenedFlag:
-     type: string
-     enum:
-      - Y
-      - N
-     description: 'CWA ref: PO_VENDORS.ATTRIBUTE13. `TODO: Need better description of this field, any business rules? check if this should be synced with head office data or if this is separate function`'
+     type: boolean
+     description: |
+      CWA ref: PO_VENDORS.ATTRIBUTE13 (this is an enum in CWA "Y"/"N"). 
+      
+      `TODO: Need better description of this field, any business rules? check if this should be synced with head office data or if this is separate function`
     intervenedChangeDate:
      type: string
      format: date
-     description: 'CWA ref: PO_VENDORS.ATTRIBUTE15. `TODO: Need better description of this field, any business rules? check if this should be synced with head office data or if this is separate function`'
+     description: |
+      CWA ref: PO_VENDORS.ATTRIBUTE15. 
+      
+      `TODO: Need better description of this field, any business rules? check if this should be synced with head office data or if this is separate function`
 
 
   IntervenedOfficeDetailsV2:
@@ -1749,15 +1876,18 @@ components:
     - intervenedChangeDate
    properties:
     intervenedFlag:
-     type: string
-     enum:
-      - Y
-      - N
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.ATTRIBUTE11. `TODO: Need better description of this field, any business rules?`'
+     type: boolean
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.ATTRIBUTE11 (this is an enum in CWA "Y"/"N"). 
+      
+      `TODO: Need better description of this field, any business rules?`
     intervenedChangeDate:
      type: string
      format: date
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.ATTRIBUTE12. `TODO: Need better description of this field, any business rules?`'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.ATTRIBUTE12. 
+      
+      `TODO: Need better description of this field, any business rules?`
 
 
   AddressV2:
@@ -1769,45 +1899,59 @@ components:
    properties:
     line1:
      type: string
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE1. `TODO: find out what address info is stored in this attribute`'
-     example: '`TODO: provide example`'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE1. 
+      
+      `TODO: find out what address info is stored in this attribute`'
+     example: 'OLD COUNTY COURT'
     line2:
      type: string
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE2. `TODO: find out what address info is stored in this attribute`'
-     example: '`TODO: provide example`'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE2. 
+      
+      `TODO: find out what address info is stored in this attribute`
+     example: '56 WESTGATE ROAD'
     line3:
      type: string
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE3. `TODO: find out what address info is stored in this attribute`'
-     example: '`TODO: provide example`'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE3. 
+
+      `TODO: find out what address info is stored in this attribute`
     line4:
      type: string
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE4. `TODO: find out what address info is stored in this attribute`'
-     example: '`TODO: provide example`'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.ADDRESS_LINE4. 
+      
+      `TODO: find out what address info is stored in this attribute`
     townOrCity:
      type: string
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.CITY. `TODO: any business rules for verifying data?`'
-     example: '`TODO: provide example`'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.CITY. 
+      
+      `TODO: any business rules for verifying data?`
+     example: 'NEWCASTLE-UPON-TYNE'
     county:
      type: string
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.COUNTY. `TODO: any business rules for verifying data?`'
-     example: '`TODO: provide example`'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.COUNTY. 
+      
+      `TODO: any business rules for verifying data?`
     postcode:
      type: string
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.ZIP. `TODO: any business rules for verifying data?`'
-     example: '`TODO: provide example`'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.ZIP. 
+      
+      `TODO: any business rules for verifying data?`
+     example: 'NE1 5XU'
 
   PhoneV2:
-   type: object
-   required:
-    - area
-    - phone
-   properties:
-    area:
-     type: string
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.AREA_CODE. `TODO: any business rules for verifying data? do we need it as a separate field?`'
-    phone:
-     type: string
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.PHONE. `TODO: any business rules for verifying data? do we need it as a separate field?`'
+   type: string
+   description: |
+    CWA ref: PO_VENDOR_SITES_ALL.AREA_CODE + PO_VENDOR_SITES_ALL.PHONE. 
+    
+    `TODO: any business rules for verifying data? do we need it as a separate field?`
+   example: '0121 232 1111'
+
   DXV2:
    type: object
    required:
@@ -1829,6 +1973,7 @@ components:
     vatNumber:
      type: string
      description: 'CWA ref: PO_VENDOR_SITES_ALL.VAT_REGISTRATION_NUM'
+     example: '476628407'
 
   PaymentDetailsCreateV2:
    type: object
@@ -1840,7 +1985,10 @@ components:
      enum:
       - Cheque
       - Electronic
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.EDI_PAYMENT_METHOD. `TODO: check the enum values. Any business rules?`'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.EDI_PAYMENT_METHOD. 
+      
+      `TODO: check the enum values. Any business rules?`
     bankAccountDetails:
      $ref: '#/components/schemas/BankAccountCreateV2'
      description: 'Bank details do not apply if paymentMethod=Cheque'
@@ -1855,19 +2003,24 @@ components:
      enum:
       - Cheque
       - Electronic
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.EDI_PAYMENT_METHOD. `TODO: check the enum values. Any business rules?`'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.EDI_PAYMENT_METHOD. 
+      
+      `TODO: check the enum values. Any business rules?`
     paymentHeldFlag:
-     type: string
-     enum:
-      - Y
-      - N
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.HOLD_ALL_PAYMENTS_FLAG. `TODO: check the enum values. Any business rules?`'
+     type: boolean
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.HOLD_ALL_PAYMENTS_FLAG (this is an enum in CWA "Y"/"N"). 
+      
+      `TODO: check the enum values. Any business rules?`
     paymentHeldReason:
      type: string
-     description: 'CWA ref: PO_VENDOR_SITES_ALL.HOLD_REASON. `TODO: check if this is mandatory when paymentHeldFlag=Y`'
+     description: |
+      CWA ref: PO_VENDOR_SITES_ALL.HOLD_REASON. 
+      
+      `TODO: check if this is mandatory when paymentHeldFlag=Y`
     bankAccountDetailsGUID:
-     type: string
-     description: 'CWA ref: N/A'
+     $ref: '#/components/schemas/BaseEntityGUIDV2'
 
 
   BankAccountCreateV2:
@@ -1877,28 +2030,39 @@ components:
     - sortCode
     - accountNumber
     - activeDateFrom
-    - primary
+    - primaryFlag
    properties:
     accountName:
      type: string
-     description: 'CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NAME'
+     description: |
+      CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NAME
+     example: 'ABC co (UK) LLP CLIENT A/C 1'
     sortCode:
      type: string
-     description: 'CWA ref: AP_BANK_BRANCHES.BANK_NUM'
+     description: |
+      CWA ref: AP_BANK_BRANCHES.BANK_NUM
+     example: '601111'
     accountNumber:
      type: string
-     description: 'CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NUM'
+     description: |
+      CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NUM
+     example: '06805333'
     activeDateFrom:
      type: string
      format: date
-     description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.START_DATE'
+     description: |
+      CWA ref: AP_BANK_ACCOUNT_USES_ALL.START_DATE
     activeDateTo:
      type: string
      format: date
-     description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.END_DATE'
-    primary:
+     description: |
+      CWA ref: AP_BANK_ACCOUNT_USES_ALL.END_DATE
+    primaryFlag:
      type: boolean
-     description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.PRIMARY_FLAG. `TODO: should we keep this flag in local? or should it be like the head office a property on the provider firm? What happens when this flag is set when creating an additional office?`'
+     description: |
+      CWA ref: AP_BANK_ACCOUNT_USES_ALL.PRIMARY_FLAG. 
+      
+      `TODO: should we keep this flag in local? or should it be like the head office a property on the provider firm? What happens when this flag is set when creating an additional office?`
 
 
   BankAccountV2:
@@ -1910,28 +2074,39 @@ components:
        - sortCode
        - accountNumber
        - activeDateFrom
-       - primary
+       - primaryFlag
       properties:
        accountName:
         type: string
-        description: 'CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NAME'
+        description: |
+         CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NAME
+        example: 'ABC co (UK) LLP CLIENT A/C 1'
        sortCode:
         type: string
-        description: 'CWA ref: AP_BANK_BRANCHES.BANK_NUM'
+        description:  |
+         CWA ref: AP_BANK_BRANCHES.BANK_NUM
+        example: '601111'
        accountNumber:
         type: string
-        description: 'CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NUM'
+        description:  |
+         CWA ref: AP_BANK_ACCOUNTS_ALL.BANK_ACCOUNT_NUM
+        example: '06805333'
        activeDateFrom:
         type: string
         format: date
-        description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.START_DATE'
+        description: |
+         CWA ref: AP_BANK_ACCOUNT_USES_ALL.START_DATE
        activeDateTo:
         type: string
         format: date
-        description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.END_DATE'
-       primary:
+        description: |
+         CWA ref: AP_BANK_ACCOUNT_USES_ALL.END_DATE
+       primaryFlag:
         type: boolean
-        description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.PRIMARY_FLAG. `TODO: should we keep this flag in local? or should it be like the head office a property on the provider firm?`'
+        description: |
+         CWA ref: AP_BANK_ACCOUNT_USES_ALL.PRIMARY_FLAG. 
+         
+         `TODO: should we keep this flag in local? or should it be like the head office a property on the provider firm?`
 
 
   BankAccountPatchV2:
@@ -1940,10 +2115,14 @@ components:
     activeDateTo:
      type: string
      format: date
-     description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.END_DATE'
-    primary:
+     description: |
+      CWA ref: AP_BANK_ACCOUNT_USES_ALL.END_DATE
+    primaryFlag:
      type: boolean
-     description: 'CWA ref: AP_BANK_ACCOUNT_USES_ALL.PRIMARY_FLAG. `TODO: should we keep this flag in local? or should it be like the head office a property on the provider firm?`'
+     description: |
+      CWA ref: AP_BANK_ACCOUNT_USES_ALL.PRIMARY_FLAG. 
+      
+      `TODO: should we keep this flag in local? or should it be like the head office a property on the provider firm?`
 
   OfficeBankAccountPatchV2:
    type: object
@@ -1962,28 +2141,38 @@ components:
    properties:
     firstName:
      type: string
-     description: 'CWA ref: PO_VENDOR_CONTACTS.FIRST_NAME'
+     description: |
+      CWA ref: PO_VENDOR_CONTACTS.FIRST_NAME
+     example: 'John'
     lastName:
      type: string
-     description: 'CWA ref: PO_VENDOR_CONTACTS.LAST_NAME'
+     description: |
+      CWA ref: PO_VENDOR_CONTACTS.LAST_NAME
+     example: 'Smith'
     emailAddress:
      type: string
      format: email
-     description: 'CWA ref: PO_VENDOR_CONTACTS.EMAIL_ADDRESS'
+     description: |
+      CWA ref: PO_VENDOR_CONTACTS.EMAIL_ADDRESS
+     example: 'john.smith@example.com'
     telephoneNumber:
      $ref: '#/components/schemas/PhoneV2'
     website:
      type: string
      format: uri
-     description: 'CWA ref: PO_VENDOR_CONTACTS.URL'
+     description: |
+      CWA ref: PO_VENDOR_CONTACTS.URL
+     example: 'www.abc.com'
     activeDateFrom:
      type: string
      format: date
-     description: 'CWA ref: PO_VENDOR_CONTACTS.CREATION_DATE'
+     description: |
+      CWA ref: PO_VENDOR_CONTACTS.CREATION_DATE
     activeDateTo:
      type: string
      format: date
-     description: 'CWA ref: PO_VENDOR_CONTACTS.INACTIVE_DATE'
+     description: |
+      CWA ref: PO_VENDOR_CONTACTS.INACTIVE_DATE
 
   LiaisonManagerV2:
    allOf:
@@ -1998,28 +2187,38 @@ components:
       properties:
        firstName:
         type: string
-        description: 'CWA ref: PO_VENDOR_CONTACTS.FIRST_NAME'
+        description:  |
+         CWA ref: PO_VENDOR_CONTACTS.FIRST_NAME
+        example: 'John'
        lastName:
         type: string
-        description: 'CWA ref: PO_VENDOR_CONTACTS.LAST_NAME'
+        description:  |
+         CWA ref: PO_VENDOR_CONTACTS.LAST_NAME
+        example: 'Smith'
        emailAddress:
         type: string
         format: email
-        description: 'CWA ref: PO_VENDOR_CONTACTS.EMAIL_ADDRESS'
+        description:  |
+         CWA ref: PO_VENDOR_CONTACTS.EMAIL_ADDRESS
+        example: 'john.smith@example.com'
        telephoneNumber:
         $ref: '#/components/schemas/PhoneV2'
        website:
         type: string
         format: uri
-        description: 'CWA ref: PO_VENDOR_CONTACTS.URL'
+        description: |
+         CWA ref: PO_VENDOR_CONTACTS.URL
+        example: 'www.abc.com'
        activeDateFrom:
         type: string
         format: date
-        description: 'CWA ref: PO_VENDOR_CONTACTS.CREATION_DATE'
+        description: |
+         CWA ref: PO_VENDOR_CONTACTS.CREATION_DATE
        activeDateTo:
         type: string
         format: date
-        description: 'CWA ref: PO_VENDOR_CONTACTS.INACTIVE_DATE'
+        description: |
+         CWA ref: PO_VENDOR_CONTACTS.INACTIVE_DATE
 
 
   OfficeLiaisonManagerPatchV2:
@@ -2034,13 +2233,9 @@ components:
     contractManagerId:
      type: string
      example: '`TODO: provide example`'
-     description: 'CWA ref: ??? `TODO: which field in CWA?`'
+     description: |
+      CWA ref: ??? `TODO: which field in CWA?`
 
-  OfficePractitionerCreateV2:
-   type: object
-   properties:
-    providerFirmGUID:
-     $ref: '#/components/schemas/BaseEntityGUIDV2'
 
   OfficePractitionerV2:
    allOf:
@@ -2053,32 +2248,39 @@ components:
        activeDateTo:
         type: string
         format: date
-        description: 'End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE'
+        description: |
+         End date of activity. CWA ref: PO_VENDORS.END_DATE_ACTIVE
 
   ContractManagerV2:
-   type: object
-   required:
-    - contractManagerId
-    - firstName
-    - lastName
-   properties:
-    contractManagerId:
-     type: string
-     example: '`TODO: provide example`'
-     description: 'CWA ref: ??? `TODO: which field in CWA?`'
-    firstName:
-     type: string
-     example: 'John'
-     description: 'CWA ref: ??? `TODO: which field in CWA?`'
-    lastName:
-     type: string
-     example: 'Smith'
-     description: 'CWA ref: ??? `TODO: which field in CWA?`'
-    email:
-     type: string
-     format: email
-     example: 'john.smith@example.com'
-     description: 'CWA ref: ??? `TODO: which field in CWA?`'
+   allOf:
+    - $ref: '#/components/schemas/BaseEntityV2'
+    - type: object
+      required:
+       - contractManagerId
+       - firstName
+       - lastName
+      properties:
+       contractManagerId:
+        type: string
+        example: '`TODO: provide example`'
+        description: |
+         CWA ref: ??? `TODO: which field in CWA?`
+       firstName:
+        type: string
+        example: 'John'
+        description: |
+         CWA ref: ??? `TODO: which field in CWA?`
+       lastName:
+        type: string
+        example: 'Smith'
+        description: |
+         CWA ref: ??? `TODO: which field in CWA?`
+       email:
+        type: string
+        format: email
+        example: 'john.smith@example.com'
+        description: |
+         CWA ref: ??? `TODO: which field in CWA?`
 
   OfficeContractManagerV2:
    allOf:
@@ -2092,24 +2294,29 @@ components:
        contractManagerId:
         type: string
         example: 'TODO: provide example'
-        description: 'CWA ref: ??? `TODO: which field in CWA?`'
+        description: |
+         CWA ref: ??? `TODO: which field in CWA?`
        firstName:
         type: string
         example: 'John'
-        description: 'CWA ref: ??? `TODO: which field in CWA?`'
+        description: |
+         CWA ref: ??? `TODO: which field in CWA?`
        lastName:
         type: string
         example: 'Smith'
-        description: 'CWA ref: ??? `TODO: which field in CWA?`'
+        description: |
+         CWA ref: ??? `TODO: which field in CWA?`
        email:
         type: string
         format: email
         example: 'john.smith@example.com'
-        description: 'CWA ref: ??? `TODO: which field in CWA?`'
+        description: |
+         CWA ref: ??? `TODO: which field in CWA?`
        activeDateTo:
         type: string
         format: date
-        description: 'CWA ref: ??? `TODO: which field in CWA?`'
+        description: |
+         CWA ref: ??? `TODO: which field in CWA?`
 
 
   PaginatedSearchV2:
