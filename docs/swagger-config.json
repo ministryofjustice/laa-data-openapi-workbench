@@ -1,7 +1,7 @@
 {
   "urls": [
     { "name": "laa-cse",     "url": "/openapi/laa-cse/laa-data-pda.yml" },
-    { "name": "laa-access",  "url": "/openapi/laa-access/api.yml" },
+    { "name": "laa-access",  "url": "/openapi/laa-ads/laa-data-ads.yml" },
     { "name": "laa-payments","url": "/openapi/laa-payments/api.yml" }
   ],
   "urls.primaryName": "laa-cse"
