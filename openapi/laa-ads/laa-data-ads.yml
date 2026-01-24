@@ -1,0 +1,614 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Applications API
+
+paths:
+  /api/v0/applications:
+    get:
+      tags:
+        - application
+      summary: Get applications
+      operationId: getApplications
+      parameters:
+        - in: query
+          name: status
+          description: The current overall status of the applications' decision.
+          schema:
+            $ref: "#/components/schemas/applicationStatus"
+        - in: query
+          name: laaReference
+          description: The LAA reference number of the application
+          schema:
+            type: string
+        - in: query
+          name: clientFirstName
+          description: The client first name
+          schema:
+            type: string
+        - in: query
+          name: clientLastName
+          description: The client last name
+          schema:
+            type: string
+        - in: query
+          name: clientDateOfBirth
+          description: The linked individuals date of dateOfBirth
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: userId
+          description: The caseworkers id
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: isAutoGranted
+          description: Has the application been marked as auto granted
+          schema:
+            type: boolean
+        - in: query
+          name: page
+          description: Page number of data to be returned (defaults to 1 when 0 or less)
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: pageSize
+          description: Number of applications in a page
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationSummaryResponse"
+        '400': { description: Bad request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+        '500': { description: Internal server error }
+    post:
+      tags:
+        - application
+      summary: Create an application
+      operationId: createApplication
+      requestBody:
+        description: Create an application (all fields inside `applicationContent`)
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationCreateRequest"
+      responses:
+        '201': { description: Created }
+        '400': { description: Bad request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '500': { description: Internal server error }
+
+  /api/v0/applications/{id}:
+    get:
+      tags:
+        - application
+      summary: Get an application by id
+      operationId: getApplicationById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        '400': { description: Bad request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+        '500': { description: Internal server error }
+    patch:
+      tags:
+        - application
+      summary: Update an application
+      operationId: updateApplication
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Partial update of application (all fields inside `applicationContent`)
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationUpdateRequest"
+      responses:
+        '200': { description: Success }
+        '400': { description: Bad request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+        '409': { description: Conflict }
+        '500': { description: Internal server error }
+
+  /api/v0/caseworkers:
+    get:
+      tags:
+        - caseworkers
+      summary: Get list of caseworkers
+      operationId: getCaseworkers
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseworkerResponse"
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '500': { description: Internal server error }
+
+  /api/v0/applications/{id}/history-search:
+    get:
+      tags:
+        - application
+      summary: Get a list of events associated with an application
+      operationId: getApplicationHistory
+      parameters:
+        - in: path
+          name: id
+          description: "the ID of the application to get history format"
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: eventType
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/domainEventType"
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationHistoryResponse"
+        '400': { description: Bad request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+        '500': { description: Internal server error }
+
+  /api/v0/applications/assign:
+    post:
+      tags:
+        - application
+      operationId: assignCaseworker
+      summary: Assign a caseworker to one or more applications.
+      requestBody:
+        description: Assign the supplied caseworker to one or more applications.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseworkerAssignRequest'
+      responses:
+        '200': { description: OK }
+        '400': { description: Bad request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+        '500': { description: Internal server error }
+
+  /api/v0/applications/{id}/unassign:
+    post:
+      tags:
+        - application
+      operationId: unassignCaseworker
+      summary: Unassign a caseworker from an application
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        description: Optional event history describing the unassignment action
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseworkerUnassignRequest'
+      responses:
+        '200': { description: OK }
+        '400': { description: Bad request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+        '500': { description: Internal server error }
+
+  /api/v0/applications/{id}/decision:
+    patch:
+      tags:
+        - application
+      operationId: makeDecision
+      summary: Make a decision request for an application
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        description: event history describing the create decision action
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MakeDecisionRequest'
+      responses:
+        '200': { description: OK }
+        '400': { description: Bad request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+        '500': { description: Internal server error }
+
+components:
+  schemas:
+    applicationStatus:
+      type: string
+      enum:
+        - IN_PROGRESS
+        - SUBMITTED
+      description: Application statuses
+    domainEventType:
+      type: string
+      enum:
+        - APPLICATION_CREATED
+        - APPLICATION_UPDATED
+        - ASSIGN_APPLICATION_TO_CASEWORKER
+        - UNASSIGN_APPLICATION_TO_CASEWORKER
+
+    categoryOfLaw:
+      type: string
+      enum:
+        - FAMILY
+
+    matterType:
+      type: string
+      enum:
+        - SCA
+    applicationType:
+      type: string
+      enum:
+        - INITIAL
+
+    individualType:
+      type: string
+      enum:
+        - CLIENT
+
+    Individual:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - dateOfBirth
+        - details
+        - type
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        dateOfBirth:
+          type: string
+          format: date
+        details:
+          type: object
+          additionalProperties: true
+          minProperties: 1
+        type:
+          $ref: "#/components/schemas/individualType"
+
+    Application:
+      type: object
+      required:
+        - id
+        - status
+        - applicationContent
+        - laaReference
+        - schemaVersion
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/applicationStatus"
+        schemaVersion:
+          type: integer
+        applicationContent:
+          type: object
+          additionalProperties: true
+        laaReference:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        individuals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Individual"
+          minItems: 1
+        caseworkerId:
+          type: string
+          format: uuid
+
+    ApplicationCreateRequest:
+      type: object
+      required:
+        - status
+        - applicationContent
+        - laaReference
+        - individuals
+      properties:
+        status:
+          $ref: "#/components/schemas/applicationStatus"
+        applicationContent:
+          type: object
+          additionalProperties: true
+          minProperties: 1
+        laaReference:
+          type: string
+          minLength: 1
+        individuals:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/Individual"
+
+    ApplicationUpdateRequest:
+      type: object
+      required:
+        - applicationContent
+      properties:
+        status:
+          $ref: "#/components/schemas/applicationStatus"
+        applicationContent:
+          type: object
+          description: Application data to update
+          additionalProperties: true
+          minProperties: 1
+
+    ApplicationSummary:
+      type: object
+      description: (APPLICATION LIST PAGE / VIEW - OPEN APPLICATIONS ONLY BY DEFAULT)
+      properties:
+        applicationId:
+          type: string
+          format: uuid
+          description: The unique reference used to identify the application.
+        status:
+          $ref: "#/components/schemas/applicationStatus"
+        submittedAt:
+          type: string
+          format: date-time
+        lastUpdated:
+          type: string
+          format: date-time
+        usedDelegatedFunctions:
+          type: boolean
+        categoryOfLaw:
+          $ref: "#/components/schemas/categoryOfLaw"
+        matterType:
+          $ref: "#/components/schemas/matterType"
+        assignedTo:
+          type: string
+          format: uuid
+        autoGrant:
+          type: boolean
+        clientFirstName:
+          type: string
+        clientLastName:
+          type: string
+        clientDateOfBirth:
+          type: string
+          format: date
+        laaReference:
+          type: string
+        applicationType:
+          $ref: "#/components/schemas/applicationType"
+
+    ApplicationSummaryResponse:
+      type: object
+      properties:
+        paging:
+          $ref: "#/components/schemas/Paging"
+        applications:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationSummary"
+    Caseworker:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+
+    EventHistory:
+      type: object
+      properties:
+        eventDescription:
+          type: string
+
+    CaseworkerResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/Caseworker"
+
+    CaseworkerAssignRequest:
+      type: object
+      required:
+        - caseworkerId
+        - applicationIds
+      properties:
+        caseworkerId:
+          type: string
+          format: uuid
+        applicationIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uuid
+        eventHistory:
+          $ref: "#/components/schemas/EventHistory"
+
+    CaseworkerUnassignRequest:
+      type: object
+      required:
+        - eventHistory
+      properties:
+        eventHistory:
+          $ref: "#/components/schemas/EventHistory"
+
+    ApplicationHistoryResponse:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationDomainEvent"
+
+    ApplicationDomainEvent:
+      type: object
+      required:
+        - applicationId
+        - domainEventType
+        - createdAt
+        - createdBy
+        - eventDescription
+      properties:
+        applicationId:
+          type: string
+          format: uuid
+        caseworkerId:
+          type: string
+          format: uuid
+        domainEventType:
+          $ref: "#/components/schemas/domainEventType"
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+        eventDescription:
+          type: string
+
+    Paging:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        itemsReturned:
+          type: integer
+        totalRecords:
+          type: integer
+
+    decisionStatus:
+      type: string
+      enum:
+        - GRANTED
+        - PARTIALLY_GRANTED
+        - REFUSED
+
+    meritsDecisionStatus:
+      type: string
+      enum:
+        - GRANTED
+        - REFUSED
+
+    RefusalDetails:
+      type: object
+      required:
+        - reason
+        - justification
+      properties:
+        reason:
+          type: string
+        justification:
+          type: string
+
+    MeritsDecisionDetails:
+      type: object
+      required:
+        - decision
+        - refusal
+      properties:
+        decision:
+          $ref: "#/components/schemas/meritsDecisionStatus"
+        refusal:
+          $ref: "#/components/schemas/RefusalDetails"
+
+    makeDecisionProceeding:
+      type: object
+      required:
+        - proceedingId
+        - meritsDecision
+      properties:
+        proceedingId:
+          type: string
+          format: uuid
+        meritsDecision:
+          $ref: "#/components/schemas/MeritsDecisionDetails"
+
+    MakeDecisionRequest:
+      type: object
+      required:
+        - userId
+        - applicationStatus
+        - overallDecision
+        - proceedings
+      properties:
+        userId:
+          type: string
+          format: uuid
+        applicationStatus:
+          $ref: "#/components/schemas/applicationStatus"
+        overallDecision:
+          $ref: "#/components/schemas/decisionStatus"
+        proceedings:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/makeDecisionProceeding"
