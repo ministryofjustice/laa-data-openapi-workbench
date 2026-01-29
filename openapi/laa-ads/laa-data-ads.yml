@@ -926,8 +926,6 @@ components:
           format: uuid
         meritsDecision:
           $ref: "#/components/schemas/MeritsDecisionDetails"
-        certificate:
-          $ref: "#/components/schemas/Certificate"
 
     MakeDecisionRequest:
       type: object
@@ -949,6 +947,8 @@ components:
           minItems: 1
           items:
             $ref: "#/components/schemas/makeDecisionProceeding"
+        certificate:
+          $ref: "#/components/schemas/Certificate"
         eventHistory:
           $ref: "#/components/schemas/EventHistory"
 
