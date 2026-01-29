@@ -577,6 +577,11 @@ components:
         - certificateSummary
         - proceedings
       properties:
+        certificateVersion:
+          type: integer
+          example: 1
+          description:
+            Version of the certificate
         templateVersion:
           type: integer
           example: 1
