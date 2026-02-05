@@ -567,7 +567,7 @@ components:
 
     Certificate:
       type: object
-      description: Certificate details
+      description: Certificate details. Not required for Refuse decisions.
       required:
         - templateVersion
         - applicationId
@@ -914,8 +914,9 @@ components:
           description: Required if the decision is "Refuse"
         justification:
           type: string
+          description: Required if the decision is "Refuse"
 
-    makeDecisionProceeding:
+    MakeDecisionProceeding:
       type: object
       required:
         - proceedingId
@@ -946,7 +947,7 @@ components:
           type: array
           minItems: 1
           items:
-            $ref: "#/components/schemas/makeDecisionProceeding"
+            $ref: "#/components/schemas/MakeDecisionProceeding"
         certificate:
           $ref: "#/components/schemas/Certificate"
         eventHistory:
