@@ -650,15 +650,10 @@ components:
         organisation name and type. For SCA, most, if not all, opponents will be
         organisations.
       required:
-        - opponentId
         - firstName
         - lastName
         - organisation
       properties:
-        opponentId:
-          type: string
-          format: uuid
-          example: null
         firstName:
           type: string
           example: null
