@@ -677,7 +677,7 @@ components:
           description: First name of the guardian
         lastName:
           type: string
-          description: First name of the guardian
+          description: Last name of the guardian
         correspondenceAddress:
           $ref: "#/components/schemas/Address"
 
@@ -726,9 +726,9 @@ components:
           description: Date the cost limit is effective from.
         certificateLimitation:
           type: string
-          format: date-time
-          description: Date when the certificate is limited to.
-
+          description:
+            Date that the certificate is limited to. Will be "Not Applicable" 
+            for the purposes of MVP
     CertificateType:
       example: SUBSTANTIVE
       description:
@@ -808,9 +808,6 @@ components:
           type: string
           format: date-time
           description: Start date of the level of service.
-        meansDecision:
-          type: string
-          enum: [PENDING, GRANTED, REFUSED, REJECTED]
         meritsDecision:
           type: string
           enum: [PENDING, GRANTED, REFUSED, REJECTED]
@@ -864,8 +861,8 @@ components:
       description: The type of matter for the application.
       type: string
       enum:
-        - SPECIAL_CHILDRENS_ACT
-      example: SPECIAL_CHILDRENS_ACT
+        - SPECIAL_CHILDREN_ACT
+      example: SPECIAL_CHILDREN_ACT
 
     ProceedingType:
       description:
