@@ -64,28 +64,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/400Response"
+                $ref: "#/components/schemas/BadRequestError"
 
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
 
         "404":
           description: Provider not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/404Response"
+                $ref: "#/components/schemas/NotFoundError"
 
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
   /provider-events/{eventGUID}:
     get:
@@ -106,8 +106,8 @@ paths:
         - $ref: "#/components/parameters/XCorrelationId"
         - $ref: "#/components/parameters/TraceParentHeader"
         - name: eventGUID
-          in: query
-          required: false
+          in: path
+          required: true
           schema:
             type: string
           description: Filter by event GUID
@@ -126,21 +126,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/400Response"
+                $ref: "#/components/schemas/BadRequestError"
 
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
 
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
   /provider-contact-managers:
     get:
@@ -205,28 +205,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/400Response"
+                $ref: "#/components/schemas/BadRequestError"
 
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
 
         "404":
           description: Provider not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/404Response"
+                $ref: "#/components/schemas/NotFoundError"
 
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
   /provider-firms:
     post:
@@ -282,21 +282,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/400Response"
+                $ref: "#/components/schemas/BadRequestError"
 
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
 
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
     get:
       summary: Retrieve providers with optional filters
       security:
@@ -412,21 +412,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/400Response"
+                $ref: "#/components/schemas/BadRequestError"
 
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
 
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
   /provider-firms/{providerFirmGUIDorFirmNumber}:
     get:
@@ -463,19 +463,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
         "404":
           description: Provider not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/404Response"
+                $ref: "#/components/schemas/NotFoundError"
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
     patch:
       summary: Update provider firm details
       security:
@@ -525,20 +525,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
 
         "404":
           description: Provider not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/404Response"
+                $ref: "#/components/schemas/NotFoundError"
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
   /provider-firms/{providerFirmGUIDorFirmNumber}/bank-details:
     get:
@@ -599,28 +599,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/400Response"
+                $ref: "#/components/schemas/BadRequestError"
 
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
 
         "404":
           description: Provider not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/404Response"
+                $ref: "#/components/schemas/NotFoundError"
 
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
   /provider-firms/{providerFirmGUIDorFirmNumber}/offices/{officeGUIDorCode}/bank-details:
     get:
@@ -643,6 +643,7 @@ paths:
         - $ref: "#/components/parameters/XCorrelationId"
         - $ref: "#/components/parameters/TraceParentHeader"
         - $ref: "#/components/parameters/ProviderFirmGUIDorFirmNumber"
+        - $ref: "#/components/parameters/OfficeGUIDorCode"
         - name: bankAccountNumber
           in: query
           required: false
@@ -677,28 +678,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/400Response"
+                $ref: "#/components/schemas/BadRequestError"
 
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
 
         "404":
           description: Provider not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/404Response"
+                $ref: "#/components/schemas/NotFoundError"
 
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
   /provider-firms/{providerFirmGUIDorFirmNumber}/offices:
     post:
@@ -750,25 +751,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/400Response"
+                $ref: "#/components/schemas/BadRequestError"
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
         "404":
           description: Provider not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/404Response"
+                $ref: "#/components/schemas/NotFoundError"
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
     get:
       summary: Retrieve a list of provider offices with optional filters
@@ -818,19 +819,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/400Response"
+                $ref: "#/components/schemas/BadRequestError"
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
   /provider-firms-offices:
     get:
@@ -898,19 +899,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/400Response"
+                $ref: "#/components/schemas/BadRequestError"
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
   /provider-firms/{providerFirmGUIDorFirmNumber}/offices/{officeGUIDorCode}:
     get:
@@ -947,19 +948,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
         "404":
           description: Provider not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/404Response"
+                $ref: "#/components/schemas/NotFoundError"
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
     patch:
       summary: Update provider office details
       security:
@@ -1023,19 +1024,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
         "404":
           description: Provider not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/404Response"
+                $ref: "#/components/schemas/NotFoundError"
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
   /provider-firms/{providerFirmGUIDorFirmNumber}/offices/{officeGUIDorCode}/liaison-managers:
     post:
@@ -1095,21 +1096,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/400Response"
+                $ref: "#/components/schemas/BadRequestError"
 
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
 
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
     get:
       summary: Retrieve liaison managers for a given office office
@@ -1154,19 +1155,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
         "404":
           description: Provider not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/404Response"
+                $ref: "#/components/schemas/NotFoundError"
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
   /provider-firms/{providerFirmGUIDorFirmNumber}/offices/{officeGUIDorCode}/contract-managers:
     post:
@@ -1230,21 +1231,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/400Response"
+                $ref: "#/components/schemas/BadRequestError"
 
         "403":
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
 
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
     get:
       summary: Retrieve contract managers for a given office office
@@ -1286,19 +1287,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
         "404":
           description: Provider not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/404Response"
+                $ref: "#/components/schemas/NotFoundError"
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
   /provider-firms/{providerFirmGUIDorFirmNumber}/practitioners:
     get:
@@ -1347,19 +1348,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/403Response"
+                $ref: "#/components/schemas/ForbiddenError"
         "404":
           description: Provider not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/404Response"
+                $ref: "#/components/schemas/NotFoundError"
         "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/500Response"
+                $ref: "#/components/schemas/InternalServerError"
 
 components:
   securitySchemes:
@@ -1427,7 +1428,7 @@ components:
               type: string
               example: "P00XX"
 
-    400Response:
+    BadRequestError:
       type: object
       properties:
         error:
@@ -1437,7 +1438,7 @@ components:
               type: string
               example: "P00XX"
 
-    403Response:
+    ForbiddenError:
       type: object
       properties:
         error:
@@ -1447,7 +1448,7 @@ components:
               type: string
               example: "P00XX"
 
-    404Response:
+    NotFoundError:
       type: object
       properties:
         error:
@@ -1457,7 +1458,7 @@ components:
               type: string
               example: "P00NF"
 
-    500Response:
+    InternalServerError:
       type: object
       properties:
         error:
