@@ -12,6 +12,7 @@ paths:
         - bearerAuth: []
         - AzureAD:
             - api://<client-id>/access_as_user
+      operationId: getProviderEvents
       tags:
         - Events
       description: |
@@ -149,6 +150,7 @@ paths:
         - bearerAuth: []
         - AzureAD:
             - api://<client-id>/access_as_user
+      operationId: getProviderContactManagers
       tags:
         - Contract Managers
       description: |
