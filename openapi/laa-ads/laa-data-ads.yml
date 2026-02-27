@@ -676,6 +676,7 @@ components:
       required:
         - templateVersion
         - applicationId
+        - laaReference
         - client
         - provider
         - opponents
@@ -700,6 +701,9 @@ components:
           description:
             The unique reference used to identify the application associated with
             the certificate.
+        laaReference:
+          type: string
+          description: The LAA reference number of the application
         client:
           $ref: "#/components/schemas/ClientDetails"
         provider:
