@@ -11,6 +11,7 @@ paths:
       summary: Get applications
       operationId: getApplications
       parameters:
+        - $ref: "#/components/parameters/XServiceName"
         - in: query
           name: status
           description: The current overall status of the applications' decision.
@@ -49,17 +50,32 @@ paths:
           schema:
             type: boolean
         - in: query
+          name: matterType
+          description: The matter type of the application
+          schema:
+            $ref: "#/components/schemas/matterType"
+        - in: query
+          name: sortBy
+          description: The field name to sort by if sorting required (defaults to SUBMITTED_DATE)
+          schema:
+            $ref: "#/components/schemas/applicationSortBy"
+        - in: query
+          name: orderBy
+          description: The order to sort by if sorting required (defaults to ASC)
+          schema:
+            $ref: "#/components/schemas/applicationOrderBy"
+        - in: query
           name: page
-          description: Page number of data to be returned (defaults to 1 when 0 or less)
+          description: Page number of data to be returned (defaults to 1)
           schema:
             type: integer
             default: 1
         - in: query
           name: pageSize
-          description: Number of applications in a page
+          description: Number of applications in a page (defaults to 20)
           schema:
             type: integer
-            default: 10
+            default: 20
       responses:
         '200':
           description: 'Success'
@@ -77,6 +93,8 @@ paths:
         - application
       summary: Create an application
       operationId: createApplication
+      parameters:
+        - $ref: "#/components/parameters/XServiceName"
       requestBody:
         description: Create an application (all fields inside `applicationContent`)
         required: true
@@ -98,6 +116,7 @@ paths:
       summary: Get an application by id
       operationId: getApplicationById
       parameters:
+        - $ref: "#/components/parameters/XServiceName"
         - name: id
           in: path
           required: true
@@ -122,6 +141,7 @@ paths:
       summary: Update an application
       operationId: updateApplication
       parameters:
+        - $ref: "#/components/parameters/XServiceName"
         - name: id
           in: path
           required: true
@@ -150,6 +170,8 @@ paths:
         - caseworkers
       summary: Get list of caseworkers
       operationId: getCaseworkers
+      parameters:
+        - $ref: "#/components/parameters/XServiceName"
       responses:
         '200':
           description: 'Success'
@@ -168,6 +190,7 @@ paths:
       summary: Get a list of events associated with an application
       operationId: getApplicationHistory
       parameters:
+        - $ref: "#/components/parameters/XServiceName"
         - in: path
           name: id
           description: "the ID of the application to get history format"
@@ -200,6 +223,8 @@ paths:
       tags:
         - application
       operationId: assignCaseworker
+      parameters:
+        - $ref: "#/components/parameters/XServiceName"
       summary: Assign a caseworker to one or more applications.
       requestBody:
         description: Assign the supplied caseworker to one or more applications.
@@ -223,6 +248,7 @@ paths:
       operationId: unassignCaseworker
       summary: Unassign a caseworker from an application
       parameters:
+        - $ref: "#/components/parameters/XServiceName"
         - name: id
           in: path
           required: true
@@ -251,6 +277,7 @@ paths:
       operationId: makeDecision
       summary: Make a decision request for an application
       parameters:
+        - $ref: "#/components/parameters/XServiceName"
         - name: id
           in: path
           required: true
@@ -271,20 +298,68 @@ paths:
         '403': { description: Forbidden }
         '404': { description: Not found }
         '500': { description: Internal server error }
-
+  /api/v0/individuals:
+    get:
+      tags:
+        - individuals
+      summary: Get a list of individuals matching search criteria
+      operationId: getIndividuals
+      parameters:
+        - $ref: "#/components/parameters/XServiceName"
+        - name: page
+          in: query
+          description: Page number of data to be returned (defaults to 1)
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          description: Number of individuals in a page (defaults to 20)
+          schema:
+            type: integer
+            default: 20
+        - name: applicationId
+          in: query
+          description: The ID of the application the individuals are linked to
+          schema:
+            type: string
+            format: uuid
+        - name: individualType
+          in: query
+          description: The type of the individual
+          schema:
+            $ref: "#/components/schemas/individualType"
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IndividualsResponse"
+        '400': { description: Bad request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '500': { description: Internal server error }
 components:
+  parameters:
+    XServiceName:
+      in: header
+      name: X-Service-Name
+      required: true
+      schema:
+        $ref: "#/components/schemas/serviceName"
   schemas:
+    serviceName:
+      type: string
+      enum:
+        - CIVIL_APPLY
+        - CIVIL_DECIDE
+      description: Service name
     applicationStatus:
       type: string
       enum:
-        - SUBMITTED
-        - READY
-        - IN_PROGRESS
-        - GRANTED
-        - PARTIALLY_GRANTED
-        - REFUSED
-        - RFI
-        - RETURNED
+        - APPLICATION_IN_PROGRESS
+        - APPLICATION_SUBMITTED
       description: Application statuses
     domainEventType:
       type: string
@@ -293,6 +368,7 @@ components:
         - APPLICATION_UPDATED
         - ASSIGN_APPLICATION_TO_CASEWORKER
         - UNASSIGN_APPLICATION_TO_CASEWORKER
+        - APPLICATION_MAKE_DECISION_REFUSED
 
     categoryOfLaw:
       type: string
@@ -302,16 +378,29 @@ components:
     matterType:
       type: string
       enum:
-        - SCA
+        - SPECIAL_CHILDREN_ACT
     applicationType:
       type: string
       enum:
         - INITIAL
+      default: INITIAL
 
     individualType:
       type: string
       enum:
         - CLIENT
+
+    applicationSortBy:
+      type: string
+      enum:
+        - LAST_UPDATED_DATE
+        - SUBMITTED_DATE
+
+    applicationOrderBy:
+      type: string
+      enum:
+        - ASC
+        - DESC
 
     Individual:
       type: object
@@ -324,10 +413,8 @@ components:
       properties:
         firstName:
           type: string
-          minLength: 1
         lastName:
           type: string
-          minLength: 1
         dateOfBirth:
           type: string
           format: date
@@ -341,40 +428,43 @@ components:
     Application:
       type: object
       required:
-        - id
+        - applicationId
         - status
-        - applicationContent
         - laaReference
-        - schemaVersion
-        - createdAt
-        - updatedAt
+        - lastUpdated
       properties:
-        id:
+        applicationId:
           type: string
           format: uuid
         status:
           $ref: "#/components/schemas/applicationStatus"
-        schemaVersion:
-          type: integer
-        applicationContent:
-          type: object
-          additionalProperties: true
         laaReference:
           type: string
-        createdAt:
+        lastUpdated:
           type: string
           format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        individuals:
-          type: array
-          items:
-            $ref: "#/components/schemas/Individual"
-          minItems: 1
-        caseworkerId:
+        assignedTo:
           type: string
           format: uuid
+        submittedAt:
+          type: string
+          format: date-time
+        isLead:
+          type: boolean
+        useDelegatedFunctions:
+          type: boolean
+        autoGrant:
+          type: boolean
+        overallDecision:
+          $ref: "#/components/schemas/decisionStatus"
+        applicationType:
+          $ref: "#/components/schemas/applicationType"
+        opponents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Opponent"
+        provider:
+          type: string
 
     ApplicationCreateRequest:
       type: object
@@ -388,6 +478,7 @@ components:
           $ref: "#/components/schemas/applicationStatus"
         applicationContent:
           type: object
+          description: Application data to create
           additionalProperties: true
           minProperties: 1
         laaReference:
@@ -448,8 +539,12 @@ components:
           format: date
         laaReference:
           type: string
+        officeCode:
+          type: string
         applicationType:
           $ref: "#/components/schemas/applicationType"
+        isLead:
+          type: boolean
 
     ApplicationSummaryResponse:
       type: object
@@ -550,6 +645,16 @@ components:
           type: integer
         totalRecords:
           type: integer
+
+    IndividualsResponse:
+      type: object
+      properties:
+        paging:
+          $ref: "#/components/schemas/Paging"
+        individuals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Individual"
 
     decisionStatus:
       type: string
@@ -924,15 +1029,16 @@ components:
       type: object
       required:
         - userId
-        - applicationStatus
         - overallDecision
         - proceedings
+        - eventHistory
+        - autoGranted
       properties:
         userId:
           type: string
           format: uuid
-        applicationStatus:
-          $ref: "#/components/schemas/applicationStatus"
+        autoGranted:
+          type: boolean
         overallDecision:
           $ref: "#/components/schemas/decisionStatus"
         proceedings:
