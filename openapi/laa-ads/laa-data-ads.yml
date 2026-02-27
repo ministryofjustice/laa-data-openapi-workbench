@@ -796,7 +796,6 @@ components:
         - substantiveCostLimitation
         - startDate
         - costLimitEffectiveDate
-        - certificateLimitation
       properties:
         certificateId:
           type: string
@@ -829,11 +828,11 @@ components:
           type: string
           format: date-time
           description: Date the cost limit is effective from.
-        certificateLimitation:
+        certificateLimitationDate:
           type: string
+          format: date-time
           description:
-            Date that the certificate is limited to. Will be "Not Applicable" 
-            for the purposes of MVP
+            Date that the certificate is limited to. Will not be provided for MVP.
     CertificateType:
       example: SUBSTANTIVE
       description:
