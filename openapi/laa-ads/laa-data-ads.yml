@@ -340,6 +340,40 @@ paths:
         '401': { description: Unauthorized }
         '403': { description: Forbidden }
         '500': { description: Internal server error }
+
+  /api/v0/applications/{id}/notes:
+    post:
+      tags:
+        - application
+      operationId: addNotes
+      summary: |
+           Add user notes to an application. Notes will be stored as 
+           application history events of type USER_NOTE with description as provided in
+           the json payload.
+      parameters:
+        - $ref: "#/components/parameters/XServiceName"
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The application id to add the note to.
+            format: uuid
+      requestBody:
+        required: true
+        description: Optional event history describing the unassignment action
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserNote'
+      responses:
+        '200': { description: OK }
+        '400': { description: Bad request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+        '500': { description: Internal server error }
+
 components:
   parameters:
     XServiceName:
@@ -730,3 +764,17 @@ components:
           $ref: "#/components/schemas/EventHistory"
         autoGranted:
           type: boolean
+
+    UserNote:
+      type: object
+      required:
+        - userId
+        - description
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: The userId for the user that submitted the note.
+        description:
+          type: string
+          description: The text for the note as input by the user
