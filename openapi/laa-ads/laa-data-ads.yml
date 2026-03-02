@@ -218,6 +218,32 @@ paths:
         '404': { description: Not found }
         '500': { description: Internal server error }
 
+  /api/v0/applications/:id/certificate:
+    get:
+      tags:
+        - application
+      operationId: getCertificate
+      summary: Get the latest certificate data for this application
+      parameters:
+        - $ref: "#/components/parameters/XServiceName"
+        - in: path
+          name: id
+          description: "the ID of the application to get the latest certificate for"
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Certificate"
+        '400': { description: Bad request }
+        '401': { description: Unauthorized }
+        '404': { description: Not found }
+
   /api/v0/applications/assign:
     post:
       tags:
@@ -401,18 +427,6 @@ components:
       enum:
         - ASC
         - DESC
-
-    Opponent:
-      type: object
-      properties:
-        opposableType:
-          type: string
-        firstName:
-          type: string
-        lastName:
-          type: string
-        organisationName:
-          type: string
 
     Individual:
       type: object
@@ -671,6 +685,7 @@ components:
     decisionStatus:
       type: string
       enum:
+        - PENDING
         - GRANTED
         - PARTIALLY_GRANTED
         - REFUSED
@@ -681,21 +696,353 @@ components:
         - GRANTED
         - REFUSED
 
+    Certificate:
+      type: object
+      description: Certificate details. Not required for Refuse decisions.
+      required:
+        - templateVersion
+        - applicationId
+        - laaReference
+        - client
+        - provider
+        - opponents
+        - certificateSummary
+        - proceedings
+      properties:
+        certificateVersion:
+          type: integer
+          example: 1
+          description:
+            Version of the certificate
+        templateVersion:
+          type: integer
+          example: 1
+          description:
+            Version of the certificate template used when generating the
+            certificate.
+        applicationId:
+          type: string
+          format: uuid
+          example: ab329-00ad-4ef3-91c3-2fdc6d1f3c4e
+          description:
+            The unique reference used to identify the application associated with
+            the certificate.
+        laaReference:
+          type: string
+          description: The LAA reference number of the application
+        client:
+          $ref: "#/components/schemas/ClientDetails"
+        provider:
+          $ref: "#/components/schemas/ProviderDetails"
+        opponents:
+          description: (CERTIFICATE PAGE)
+          type: array
+          items:
+            $ref: "#/components/schemas/Opponent"
+        guardian:
+          $ref: "#/components/schemas/Guardian"
+        certificateSummary:
+          $ref: "#/components/schemas/CertificateSummary"
+        proceedings:
+          description: (CERTIFICATE PAGE)
+          type: array
+          items:
+            $ref: "#/components/schemas/CertificateProceedingDetails"
+
+    ClientDetails:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - correspondenceAddress
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        correspondenceAddress:
+          $ref: "#/components/schemas/Address"
+
+    ProviderDetails:
+      type: object
+      required:
+        - firmName
+        - officeAddress
+      properties:
+        firmName:
+          type: string
+          example: Jane & Co.
+          description: Name of the firm.
+        officeAddress:
+          $ref: "#/components/schemas/Address"
+
+    Opponent:
+      type: object
+      description:
+        All applications must contain at least one
+        opponent.  There can be more than one.  The opponent can be an individual
+        (consisting of a first and last name) or an organisation (consisting of an
+        organisation name and type. For SCA, most, if not all, opponents will be
+        organisations.
+      required:
+        - firstName
+        - lastName
+        - organisation
+      properties:
+        firstName:
+          type: string
+          example: null
+        lastName:
+          type: string
+          example: null
+        organisation:
+          type: string
+          example: Manchester City Council
+
+    Guardian:
+      type: object
+      description: Only if applicable
+      required:
+        - firstName
+        - lastName
+        - correspondenceAddress
+      properties:
+        firstName:
+          type: string
+          description: First name of the guardian
+        lastName:
+          type: string
+          description: Last name of the guardian
+        correspondenceAddress:
+          $ref: "#/components/schemas/Address"
+
+    CertificateSummary:
+      type: object
+      required:
+        - certificateId
+        - certificateType
+        - certificateIssueDate
+        - certificateStatusCode
+        - substantiveCostLimitation
+        - startDate
+        - costLimitEffectiveDate
+      properties:
+        certificateId:
+          type: string
+          format: uuid
+        certificateType:
+          $ref: "#/components/schemas/CertificateType"
+        certificateIssueDate:
+          type: string
+          format: date-time
+        certificateStatusCode:
+          $ref: "#/components/schemas/CertificateStatus"
+        substantiveCostLimitation:
+          type: integer
+          example: 25000
+        startDate:
+          type: string
+          format: date-time
+          description:
+            This is the start date of a certificate - usually different from 
+            "certificateIssueDate" as it depends on e.g. delegated functions.
+        endDate:
+          type: string
+          format: date-time
+          description: This is the end date of a certificate.
+        reinstatementDate:
+          type: string
+          format: date-time
+          description: This is the date when a certificate was reinstated, if applicable.
+        costLimitEffectiveDate:
+          type: string
+          format: date-time
+          description: Date the cost limit is effective from.
+        certificateLimitationDate:
+          type: string
+          format: date-time
+          description:
+            Date that the certificate is limited to. Will not be provided for MVP.
+    CertificateType:
+      example: SUBSTANTIVE
+      description:
+        Type of certificate to be issued. Only SUBSTANTIVE needed for SCA
+      enum:
+        - SUBSTANTIVE
+
+    CertificateStatus:
+      example: CLOSED
+      description:
+        This is the status of the certificate as defined by Decide, this can
+        change over time for example when a certificate is closed.
+      enum:
+        - LIVE
+        - CLOSED
+
+    ProceedingStatus:
+      example: CLOSED
+      description:
+        This is the status of the proceeding as defined by Decide, this can
+        change over time for example when a certificate is closed.
+      enum:
+        - LIVE
+        - CLOSED
+
+    CertificateProceedingDetails:
+      type: object
+      required:
+        - proceedingId
+        - proceedingDescription
+        - proceedingType
+        - categoryOfLaw
+        - matterType
+        - levelOfService
+      properties:
+        proceedingId:
+          type: string
+          format: uuid
+          example: PRC1
+          description: Auto generated unique identifier.
+        proceedingDescription:
+          type: string
+          description:
+            Description of the proceeding type, provides additional context and should 
+            be the full description e.g. ’to be represented on a court hearing for a supervision order’
+        proceedingType:
+          $ref: "#/components/schemas/ProceedingType"
+        proceedingStatus:
+          $ref: "#/components/schemas/ProceedingStatus"
+        categoryOfLaw:
+          $ref: "#/components/schemas/CategoryOfLaw"
+        matterType:
+          $ref: "#/components/schemas/MatterType"
+        levelOfService:
+          $ref: "#/components/schemas/LevelOfService"
+        delegatedFunctionsUsedDate:
+          type: string
+          format: date-time
+          description:
+            If the provider has used delegated functions for a proceeding they
+            declare the date here. Unlike other matter types, SCA uses the
+            delegated function date to backdate the substantive application when
+            issuing a certificate.  There is no 'emergency element' to the
+            application.
+        proceedingEndDate:
+          type: string
+          format: date-time
+          description: Date when proceeding ended.
+        clientInvolvementType:
+          type: string
+          enum: [SUBJECT_CHILD, RESPONDENT]
+          example: respondent
+          description:
+            One is selected for each proceeding.  For SCA the most common would be
+            'subject child' or 'respondent'.
+        levelOfServiceEffectiveDate:
+          type: string
+          format: date-time
+          description: Start date of the level of service.
+        meritsDecision:
+          type: string
+          enum: [PENDING, GRANTED, REFUSED, REJECTED]
+        previousLevelOfService:
+          type: string
+          enum: ["FULL_REPRESENTATION"]
+          description: The previous level of service, if any.
+        previousLevelOfServiceEffectiveDate:
+          type: string
+          format: date-time
+          description: Start date of the previous level of service.
+        scopeDescription:
+          type: string
+          example: Default scope for SCA proceedings.
+          description: The full description of the scope limitation.
+        scopeLimitation:
+          type: string
+          enum: [FINAL_HEARING]
+          description:
+            The apply service only permits selection of the default proceeding
+            scope for SCA.  There is only one for each proceeding because the
+            apply service limits the selection to default only, which is "final
+            hearing" for SCA applications. For other matter types there may be
+            more than one for each proceeding.
+        limitationEffectiveDate:
+          type: string
+          format: date-time
+          description: Date from which the scope limitation starts.
+        limitationEndDate:
+          type: string
+          format: date-time
+          description: Date when the scope limitation ends.
+
+    LevelOfService:
+      type: string
+      enum:
+        - FULL_REPRESENTATION
+      description:
+        This is the 'level of service'.  The apply service only permits selection
+        of the default level for SCA which is "full representation".  There is one
+        for each proceeding.
+
+    CategoryOfLaw:
+      description: The category of law for the application.
+      type: string
+      enum:
+        - FAMILY
+      example: FAMILY
+
+    MatterType:
+      description: The type of matter for the application.
+      type: string
+      enum:
+        - SPECIAL_CHILDREN_ACT
+      example: SPECIAL_CHILDREN_ACT
+
+    ProceedingType:
+      description:
+        Type of proceeding order, which can only be one from a pre-determined
+        list.
+      type: string
+      example: SCA_SUPERVISION_ORDER
+      enum:
+        - CARE_ORDER
+        - CHILD_ASSESSMENT_ORDER
+        - CHILD_ARRANGEMENTS_ORDER_CONTACT
+        - ARRANGEMENTS_ORDER_RESIDENCE
+        - CONTACT_WITH_A_CHILD_IN_CARE
+        - CONTACT_ORDER_VARY_OR_DISCHARGE
+        - END_CONTACT_WITH_A_CHILD_IN_CARE
+        - EMERGENCY_PROTECTION_ORDER
+        - EMERGENCY_PROTECTION_ORDER_EXTEND
+        - EMERGENCY_PROTECTION_ORDER_DISCHARGE
+        - PARENTAL_RESPONSIBILITY
+        - PLACEMENT_ORDER
+        - PROHIBITED_STEPS_ORDER
+        - PROHIBITED_STEPS_ORDER_VARY_OR_DISCHARGE
+        - RECOVERY_OF_CHILDREN_ORDER
+        - RESIDENCE_VARY_OR_DISCHARGE
+        - SCA_SUPERVISION_ORDER
+        - SECURE_ACCOMMODATION_ORDER
+        - SPECIAL_GUARDIANSHIP_ORDER
+        - SPECIFIC_ISSUE_ORDER
+        - SPECIFIC_ISSUE_ORDER_VARY_OR_DISCHARGE
+
     MeritsDecisionDetails:
       type: object
       required:
         - decision
-        - reason
         - justification
       properties:
         decision:
           $ref: "#/components/schemas/meritsDecisionStatus"
         reason:
           type: string
+          description: Required if the decision is "Refuse"
         justification:
           type: string
+          description: Required if the decision is "Refuse"
 
-    makeDecisionProceeding:
+    MakeDecisionProceeding:
       type: object
       required:
         - proceedingId
@@ -714,19 +1061,58 @@ components:
         - overallDecision
         - proceedings
         - eventHistory
-        - autoGranted
       properties:
         userId:
           type: string
           format: uuid
+        autoGranted:
+          type: boolean
         overallDecision:
           $ref: "#/components/schemas/decisionStatus"
         proceedings:
           type: array
           minItems: 1
           items:
-            $ref: "#/components/schemas/makeDecisionProceeding"
+            $ref: "#/components/schemas/MakeDecisionProceeding"
+        certificate:
+          $ref: "#/components/schemas/Certificate"
         eventHistory:
           $ref: "#/components/schemas/EventHistory"
-        autoGranted:
-          type: boolean
+
+    Address:
+      type: object
+      required:
+        - addressLineOne
+        - postcode
+        - countryCode
+      properties:
+        buildingNumberName:
+          type: string
+        addressLineOne:
+          type: string
+        addressLineTwo:
+          type: string
+        addressLineThree:
+          type: string
+        city:
+          type: string
+        county:
+          type: string
+        postcode:
+          type: string
+        countryCode:
+          type: string
+        careOfType:
+          $ref: "#/components/schemas/CareOfType"
+        careOfFirstName:
+          type: string
+        careOfLastName:
+          type: string
+        careOfOrganisationName:
+          type: string
+
+    CareOfType:
+      type: string
+      enum:
+        - "ORGANISATION"
+        - "INDIVIDUAL"
