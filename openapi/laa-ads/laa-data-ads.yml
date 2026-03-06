@@ -340,6 +340,40 @@ paths:
         '401': { description: Unauthorized }
         '403': { description: Forbidden }
         '500': { description: Internal server error }
+
+  /api/v0/applications/{id}/notes:
+    post:
+      tags:
+        - application
+      operationId: addNotes
+      summary: |
+           Add user notes to an application. Notes will be stored as 
+           application history events of type USER_NOTE with description as provided in
+           the json payload and userId should be the user in the auth token sent by Decide.
+      parameters:
+        - $ref: "#/components/parameters/XServiceName"
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: The application id to add the note to.
+            format: uuid
+      requestBody:
+        required: true
+        description: The additional notes to add to this application
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserNote'
+      responses:
+        '200': { description: OK }
+        '400': { description: Bad request }
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+        '500': { description: Internal server error }
+
 components:
   parameters:
     XServiceName:
@@ -730,3 +764,12 @@ components:
           $ref: "#/components/schemas/EventHistory"
         autoGranted:
           type: boolean
+
+    UserNote:
+      type: object
+      required:
+        - notes
+      properties:
+        notes:
+          type: string
+          description: The text for the note as input by the user
