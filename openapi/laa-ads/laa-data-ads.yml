@@ -286,7 +286,7 @@ paths:
             format: uuid
       requestBody:
         required: true
-        description: event history describing the create decision action
+        description: event history describing the create decision action. User ID to be recorded in the history for this event to come from the logged in user.
         content:
           application/json:
             schema:
@@ -1031,15 +1031,11 @@ components:
     MakeDecisionRequest:
       type: object
       required:
-        - userId
         - overallDecision
         - proceedings
         - eventHistory
         - autoGranted
       properties:
-        userId:
-          type: string
-          format: uuid
         autoGranted:
           type: boolean
         overallDecision:
