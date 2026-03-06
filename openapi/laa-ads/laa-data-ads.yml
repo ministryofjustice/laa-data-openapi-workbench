@@ -349,7 +349,7 @@ paths:
       summary: |
            Add user notes to an application. Notes will be stored as 
            application history events of type USER_NOTE with description as provided in
-           the json payload.
+           the json payload and userId should be the user in the auth token sent by Decide.
       parameters:
         - $ref: "#/components/parameters/XServiceName"
         - name: id
@@ -361,7 +361,7 @@ paths:
             format: uuid
       requestBody:
         required: true
-        description: Optional event history describing the unassignment action
+        description: The additional notes to add to this application
         content:
           application/json:
             schema:
@@ -768,13 +768,8 @@ components:
     UserNote:
       type: object
       required:
-        - userId
-        - description
+        - notes
       properties:
-        userId:
-          type: string
-          format: uuid
-          description: The userId for the user that submitted the note.
-        description:
+        notes:
           type: string
           description: The text for the note as input by the user
